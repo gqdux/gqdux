@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redux-GraphQL-Query</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    
+    <!-- Babel-standalone is very slow in-browser jsx compilation. Don't use this in production: -->
+    <script src="https://unpkg.com/redux@4.0.5/dist/redux.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="./redux-graphql.umd.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const {gql,schemaToQuerySelector,querySelectorToUseLeafQuery,schemaToReducerMap}=ReduxGraphql;
+      const {combineReducers,createStore}=Redux;
+      const {useState,useEffect,useMemo}=React;
+      
+      // setup
+      const schema=gql(`
+        type Todo{
+          id:ID
+          text:String
+        }
+      `);
+
+      const rootState={
+        Todo:{
+          '1':{id:'1',name:'1'},
+          '2':{id:'2',name:'2'},
+        }
+      };
+      const getTodoId=(()=>{let curID=2;return (id=`${++curID}`)=>id;})();
+
+      const reducerMap={
+        ...schemaToReducerMap(schema)(),
+        TODO_ADD:(prevState,{payload:{id=getTodoId(),name=`name is ${id}`}={}})=>({...prevState,[id]:{id,name}})
+      }
+
+      const store = createStore( combineReducers(reducerMap), rootState );
+      
+
+      // Query Hook
+      const useLeafQuery = querySelectorToUseLeafQuery( schemaToQuerySelector(schema), store, useState, useEffect, useMemo );
+
+
+      // Components
+      const AddButton=()=>{
+        const addTodo=()=>store.dispatch({type:'TODO_ADD',payload:{}});
+        return <button onClick={addTodo}>Add Todo</button>;
+      }
+
+      const Todos=()=>{
+        const ids=useLeafQuery(gql(`{Todo{id}}`));
+        return (<ul>{
+          Object.values(ids).map(id=>(
+            <li key={id}>
+              {id}
+              <RemoveButton data-gql={`{Todo(id:"${id}"){id}}`}/>
+            </li>
+          ))
+        }</ul>);
+      };
+      
+      const RemoveButton=({['data-gql']:gqlString})=>{
+        // remove need for specific action name, to minimize component AST edges and keep button presentational
+        // return <button onClick={getMutationDispatcher(gql(gqlString))}>Remove</button>;
+        const payload = useLeafQuery(gql(gqlString));
+        console.log(`RemoveButton gqlString`,gqlString,`payload`,payload);
+        const remove=()=>store.dispatch({type:'TODO_SUBTRACT',payload});
+        return <button onClick={remove}>Remove</button>;
+      }
+
+      const App = ()=>{
+        return <>
+          <h1>Todos Example</h1>
+          <Todos/>
+          <AddButton/>
+        </>;
+      };
+
+      ReactDOM.render(
+        <App/>,
+        document.getElementById('root')
+      );
+    </script>
+    <script>
+    </script>
+  </body>
+</html>
