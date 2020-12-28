@@ -1,0 +1,387 @@
+{
+  "bundleSize": 91247,
+  "bundleOrigSize": 95818,
+  "bundleReduction": 4.77,
+  "modules": [
+    {
+      "id": "/node_modules/graphql/language/parser.mjs",
+      "size": 40601,
+      "origSize": 41054,
+      "renderedExports": [
+        "parse",
+        "parseValue",
+        "parseType"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "\u0000/node_modules/graphql/language/parser.mjs?commonjs-proxy",
+        "/node_modules/graphql-tag/src/index.js"
+      ],
+      "percent": 44.5,
+      "reduction": 1.1
+    },
+    {
+      "id": "/node_modules/graphql/language/lexer.mjs",
+      "size": 15615,
+      "origSize": 15826,
+      "renderedExports": [
+        "Lexer",
+        "isPunctuatorTokenKind"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/language/parser.mjs"
+      ],
+      "percent": 17.11,
+      "reduction": 1.33
+    },
+    {
+      "id": "/node_modules/graphql/error/GraphQLError.mjs",
+      "size": 11876,
+      "origSize": 12201,
+      "renderedExports": [
+        "GraphQLError",
+        "printError"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/error/syntaxError.mjs"
+      ],
+      "percent": 13.02,
+      "reduction": 2.66
+    },
+    {
+      "id": "/node_modules/graphql-tag/src/index.js",
+      "size": 5200,
+      "origSize": 5252,
+      "renderedExports": [
+        "default",
+        "__moduleExports"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/packages/graphql-tag-bundled/src/graphql-tag-bundled.js"
+      ],
+      "percent": 5.7,
+      "reduction": 0.99
+    },
+    {
+      "id": "/node_modules/graphql/jsutils/inspect.mjs",
+      "size": 3190,
+      "origSize": 3280,
+      "renderedExports": [
+        "default"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/language/parser.mjs"
+      ],
+      "percent": 3.5,
+      "reduction": 2.74
+    },
+    {
+      "id": "/node_modules/graphql/language/printLocation.mjs",
+      "size": 2425,
+      "origSize": 2486,
+      "renderedExports": [
+        "printLocation",
+        "printSourceLocation"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/error/GraphQLError.mjs"
+      ],
+      "percent": 2.66,
+      "reduction": 2.45
+    },
+    {
+      "id": "/node_modules/graphql/language/ast.mjs",
+      "size": 2292,
+      "origSize": 2492,
+      "renderedExports": [
+        "Location",
+        "Token"
+      ],
+      "removedExports": [
+        "isNode"
+      ],
+      "dependents": [
+        "/node_modules/graphql/language/lexer.mjs",
+        "/node_modules/graphql/language/parser.mjs"
+      ],
+      "percent": 2.51,
+      "reduction": 8.03
+    },
+    {
+      "id": "/node_modules/graphql/language/kinds.mjs",
+      "size": 1971,
+      "origSize": 1979,
+      "renderedExports": [
+        "Kind"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/language/parser.mjs"
+      ],
+      "percent": 2.16,
+      "reduction": 0.4
+    },
+    {
+      "id": "/node_modules/graphql/language/source.mjs",
+      "size": 1818,
+      "origSize": 1932,
+      "renderedExports": [
+        "Source"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/language/parser.mjs"
+      ],
+      "percent": 1.99,
+      "reduction": 5.9
+    },
+    {
+      "id": "/node_modules/graphql/language/blockString.mjs",
+      "size": 1653,
+      "origSize": 2882,
+      "renderedExports": [
+        "dedentBlockStringValue",
+        "getBlockStringIndentation"
+      ],
+      "removedExports": [
+        "printBlockString"
+      ],
+      "dependents": [
+        "/node_modules/graphql/language/lexer.mjs"
+      ],
+      "percent": 1.81,
+      "reduction": 42.64
+    },
+    {
+      "id": "/node_modules/graphql/language/directiveLocation.mjs",
+      "size": 800,
+      "origSize": 808,
+      "renderedExports": [
+        "DirectiveLocation"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/language/parser.mjs"
+      ],
+      "percent": 0.88,
+      "reduction": 0.99
+    },
+    {
+      "id": "/node_modules/graphql/jsutils/isObjectLike.mjs",
+      "size": 611,
+      "origSize": 617,
+      "renderedExports": [
+        "default"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/error/GraphQLError.mjs"
+      ],
+      "percent": 0.67,
+      "reduction": 0.97
+    },
+    {
+      "id": "/node_modules/graphql/language/tokenKind.mjs",
+      "size": 553,
+      "origSize": 561,
+      "renderedExports": [
+        "TokenKind"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/language/lexer.mjs",
+        "/node_modules/graphql/language/parser.mjs"
+      ],
+      "percent": 0.61,
+      "reduction": 1.43
+    },
+    {
+      "id": "/node_modules/graphql/language/location.mjs",
+      "size": 518,
+      "origSize": 526,
+      "renderedExports": [
+        "getLocation"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/language/printLocation.mjs",
+        "/node_modules/graphql/error/GraphQLError.mjs"
+      ],
+      "percent": 0.57,
+      "reduction": 1.52
+    },
+    {
+      "id": "/node_modules/graphql/jsutils/defineInspect.mjs",
+      "size": 445,
+      "origSize": 575,
+      "renderedExports": [
+        "default"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/language/ast.mjs"
+      ],
+      "percent": 0.49,
+      "reduction": 22.61
+    },
+    {
+      "id": "\u0000rollup-plugin-inject-process-env",
+      "size": 333,
+      "origSize": 332,
+      "renderedExports": [],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/jsutils/nodejsCustomInspectSymbol.mjs",
+        "/node_modules/graphql/jsutils/inspect.mjs",
+        "/node_modules/graphql/jsutils/devAssert.mjs",
+        "/node_modules/graphql/jsutils/isObjectLike.mjs",
+        "/node_modules/graphql/polyfills/symbols.mjs",
+        "/node_modules/graphql/language/location.mjs",
+        "/node_modules/graphql/language/printLocation.mjs",
+        "/node_modules/graphql/error/GraphQLError.mjs",
+        "/node_modules/graphql/error/syntaxError.mjs",
+        "/node_modules/graphql/language/kinds.mjs",
+        "/node_modules/graphql/jsutils/invariant.mjs",
+        "/node_modules/graphql/jsutils/defineInspect.mjs",
+        "/node_modules/graphql/language/ast.mjs",
+        "/node_modules/graphql/language/source.mjs",
+        "/node_modules/graphql/language/tokenKind.mjs",
+        "/node_modules/graphql/language/directiveLocation.mjs",
+        "/node_modules/graphql/language/blockString.mjs",
+        "/node_modules/graphql/language/lexer.mjs",
+        "/node_modules/graphql/language/parser.mjs",
+        "/node_modules/graphql-tag/src/index.js",
+        "/packages/graphql-tag-bundled/src/graphql-tag-bundled.js"
+      ],
+      "percent": 0.36,
+      "reduction": 0
+    },
+    {
+      "id": "/node_modules/graphql/error/syntaxError.mjs",
+      "size": 310,
+      "origSize": 369,
+      "renderedExports": [
+        "syntaxError"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/language/lexer.mjs",
+        "/node_modules/graphql/language/parser.mjs"
+      ],
+      "percent": 0.34,
+      "reduction": 15.99
+    },
+    {
+      "id": "/node_modules/graphql/jsutils/invariant.mjs",
+      "size": 289,
+      "origSize": 305,
+      "renderedExports": [
+        "default"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/jsutils/defineInspect.mjs"
+      ],
+      "percent": 0.32,
+      "reduction": 5.25
+    },
+    {
+      "id": "/node_modules/graphql/jsutils/nodejsCustomInspectSymbol.mjs",
+      "size": 235,
+      "origSize": 278,
+      "renderedExports": [
+        "default"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/jsutils/inspect.mjs",
+        "/node_modules/graphql/jsutils/defineInspect.mjs"
+      ],
+      "percent": 0.26,
+      "reduction": 15.47
+    },
+    {
+      "id": "/node_modules/graphql/jsutils/devAssert.mjs",
+      "size": 235,
+      "origSize": 251,
+      "renderedExports": [
+        "default"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql/language/source.mjs",
+        "/node_modules/graphql/language/parser.mjs"
+      ],
+      "percent": 0.26,
+      "reduction": 6.37
+    },
+    {
+      "id": "/node_modules/graphql/polyfills/symbols.mjs",
+      "size": 154,
+      "origSize": 825,
+      "renderedExports": [
+        "SYMBOL_TO_STRING_TAG"
+      ],
+      "removedExports": [
+        "SYMBOL_ITERATOR",
+        "SYMBOL_ASYNC_ITERATOR"
+      ],
+      "dependents": [
+        "/node_modules/graphql/error/GraphQLError.mjs",
+        "/node_modules/graphql/language/source.mjs"
+      ],
+      "percent": 0.17,
+      "reduction": 81.33
+    },
+    {
+      "id": "\u0000commonjsHelpers.js",
+      "size": 74,
+      "origSize": 719,
+      "renderedExports": [
+        "getCjsExportFromNamespace"
+      ],
+      "removedExports": [
+        "commonjsGlobal",
+        "createCommonjsModule",
+        "commonjsRequire"
+      ],
+      "dependents": [
+        "\u0000/node_modules/graphql/language/parser.mjs?commonjs-proxy"
+      ],
+      "percent": 0.08,
+      "reduction": 89.71
+    },
+    {
+      "id": "\u0000/node_modules/graphql/language/parser.mjs?commonjs-proxy",
+      "size": 49,
+      "origSize": 217,
+      "renderedExports": [
+        "default"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/node_modules/graphql-tag/src/index.js"
+      ],
+      "percent": 0.05,
+      "reduction": 77.42
+    },
+    {
+      "id": "/packages/graphql-tag-bundled/src/graphql-tag-bundled.js",
+      "size": 0,
+      "origSize": 51,
+      "renderedExports": [
+        "default"
+      ],
+      "removedExports": [],
+      "dependents": [],
+      "percent": 0,
+      "reduction": 100
+    }
+  ],
+  "moduleCount": 24
+}

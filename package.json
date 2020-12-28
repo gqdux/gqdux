@@ -1,27 +1,49 @@
 {
   "name": "gqdux",
-  "version": "0.0.29",
-  "description": "Simple, Redux-first GraphQL utilities optimized for developer speed.",
-  "homepage": "",
-  "author": "Adam Laughlin <adam.laughlin@gmail.com>",
-  "license": "MIT",
-  "main":"src/gqdux.js",
-  "module":"src/gqdux.js",
-  "type":"module",
-  "publishConfig": {
-    "access": "public"
-  },
+  "root": true,
+  "private": true,
+  "repository": "https://github.com/gqdux/gqdux",
+  "workspaces": [
+    "packages/*"
+  ],
+  "// all the babel stuff is only for jest": "https://github.com/facebook/jest/issues/9430",
   "dependencies": {
-    "@a-laughlin/fp-utils": "^0.0.29"
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@rollup/plugin-alias": "^3.1.1",
+    "@rollup/plugin-commonjs": "^14.0.0",
+    "@rollup/plugin-html": "^0.2.0",
+    "@rollup/plugin-multi-entry": "^3.0.1",
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "@rollup/plugin-sucrase": "^3.1.0",
+    "babel-jest": "^26.0.1",
+    "eslint": "^7.13.0",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jest": "^23.13.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-react": "^7.20.0",
+    "jest": "^26.0.1",
+    "lerna": "^3.21.0",
+    "lodash-es": "^4",
+    "rollup": "^2.22.1",
+    "rollup-plugin-analyzer": "^3.3.0",
+    "rollup-plugin-cpy": "^2.0.1",
+    "rollup-plugin-inject-process-env": "^1.3.0",
+    "rollup-plugin-sourcemaps": ">=0.6.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-visualizer": "^4.0.4"
   },
-  "devDependencies": {
-    "@testing-library/react-hooks": "^3.3.0",
-    "graphql": "^15.3.0",
-    "graphql-tag": "^2.10.4",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-test-renderer": "^16.13.1",
-    "redux": "^4.0.5"
-  },
-  "gitHead": "57f810435642e947a90f07c98b91f0ee8bdb1318"
+  "scripts": {
+    "build": "rm -rf ./packages/*/dist/*; rollup -c rollup.config.js",
+    "test:clearcache": "jest --clear-cache",
+    "test:nowatch": "jest --no-cache --no-watch ./packages/**/src/*.test.js",
+    "test:watch": "jest --watch ./packages/**/src/*.test.js",
+    "//test:exp:nowatch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --no-cache --no-watch ./packages/**/src/*.test.js",
+    "//test:exp:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --no-cache --watch ./packages/**/src/*.test.js",
+    "// test:debug requires going to chrome://inspect and opening chrome devtools for node": "",
+    "// can also just use node debug in vscode with f5": "",
+    "test:debug": "node --inspect node_modules/.bin/jest --watch --runInBand/./packages/**/src/*.test.js",
+    "test": "jest --watch ./packages/**/src/*.test.js"
+  }
 }

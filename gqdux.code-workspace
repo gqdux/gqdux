@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"eslint.packageManager": "yarn",
+		"eslint.codeActionsOnSave.mode": "problems",
+		"npm.packageManager": "yarn",
+		"npm-intellisense.packageSubfoldersIntellisense": true,
+		"javascript.preferences.quoteStyle": "single",
+		"editor.tabSize": 2,
+		"debug.showInStatusBar": "never",
+		"debug.javascript.autoAttachFilter": "smart",
+		"eslint.lintTask.enable": true,
+		"eslint.nodePath": "/Users/adam/.nvm/versions/node/v14.5.0/bin/node",
+		"jestRunIt.testMatchPatterns": [
+			"**/*.{spec,test}.{js,ts,jsx,tsx}"
+		]
+	}
+}

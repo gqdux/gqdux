@@ -1,0 +1,15 @@
+{
+  "name": "@a-laughlin/fp-utils",
+  "version": "0.0.29",
+  "description": "functional programming utils",
+  "author": "Adam Laughlin <adam.laughlin@gmail.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main":"src/fp-utils.js",
+  "module":"src/fp-utils.js",
+  "type":"module",
+  "homepage": "",
+  "gitHead": "57f810435642e947a90f07c98b91f0ee8bdb1318"
+}

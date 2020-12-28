@@ -1,0 +1,9 @@
+node_modules
+coverage
+__pycache__
+.vscode
+.env
+dist
+*.log
+*.lock
+.DS_Store

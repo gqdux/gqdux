@@ -1,0 +1,26 @@
+{
+  "packages": [
+    "packages/*"
+  ],
+  "npmClient": "yarn",
+  "useWorkspaces": true,
+  "version": "independent",
+  "command": {
+    "publish": {
+      "ignoreChanges": [
+        "ignored-file",
+        "*.md"
+      ],
+      "message": "chore(release): publish",
+      "registry": "https://registry.npmjs.org/",
+      "graphType": "all",
+      "contents": "dist"
+    },
+    "bootstrap": {
+      "ignore": "component-*",
+      "npmClientArgs": [
+        "--no-package-lock"
+      ]
+    }
+  }
+}

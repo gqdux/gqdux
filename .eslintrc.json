@@ -1,0 +1,39 @@
+{
+  "root": true,
+  "plugins": ["import", "react", "jsx-a11y", "jest"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:jsx-a11y/strict",
+    "plugin:jest/recommended"
+    // "prettier",
+    // "prettier/react"
+  ],
+  "parser":"babel-eslint",
+  "ignorePatterns": ["node_modules", "dist", "coverage","a_laughlin_py_utils"],
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2020
+  },
+  "globals": {
+    "module":"writable"
+  },
+  "overrides": [
+    {
+      "files": ["packages/*/src/**/*.js"],
+      "env": {
+        "browser": true,
+        "node": true
+      },
+      "rules": {
+        "react/jsx-max-depth": ["error", {"max": 1}],
+        "react/prop-types": ["off"],
+        "eqeqeq": ["error"],
+        "no-unreachable":"off"
+      },
+      "settings": {
+        "react": {"version": "detect"}
+      }
+    }
+  ]
+}
