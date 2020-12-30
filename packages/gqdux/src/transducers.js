@@ -4,16 +4,7 @@ import { isObject } from 'lodash-es';
 const idnty=x=>x;
 export const identity=()=>idnty;
 
-// tdFilter(polymorphicListItemTest(meta,args));
-export const intersection=(meta,args)=>{
-  return nextReducer=>{
-    return (accumulator,value,key)=>{
-      return polymorphicListItemTest(meta,args)
-        ? nextReducer(accumulator,value,key)
-        : accumulator;
-    }
-  }
-}
+export const intersection=(meta,args)=>tdFilter(polymorphicListItemTest(meta,args));
 
 export const subtract=(meta,args)=>tdOmit(polymorphicListItemTest(meta,args));
 

@@ -51,36 +51,60 @@ const schema=`
 `;
 
 const initialState = {
-  a:{id:'a',name:'A',best:'b',otherbest:'c',nicknames:["AA","AAA"],friends:['b','c'],pet:'x'},
-  b:{id:'b',name:'B',best:'a',friends:['a'],nicknames:["BB","BBB"]},
-  c:{id:'c',name:'C',best:'b',friends:['b'],nicknames:[]},
+  Person:{
+    a:{id:'a',name:'A',best:'b',otherbest:'c',nicknames:["AA","AAA"],friends:['b','c'],pet:'x'},
+    b:{id:'b',name:'B',best:'a',friends:['a'],nicknames:["BB","BBB"]},
+    c:{id:'c',name:'C',best:'b',friends:['b'],nicknames:[]},
+  }
 };
 
-const {gqdux:g} = initGqdux({gql,schema,store:createStore(initReducer(schema),initialState)});
+
+const {gqdux} = initGqdux({gql,schema,store:createStore(initReducer(schema),initialState)});
 
 
-// mutation
-Collection                  g`Person(intersection:{id:"a"})`
-Prop                        g`Person(friends:{intersect:{id:"b"}})`
-//
+// change
+Collection                  gqdux`Person(intersection:{id:"a"})`
+Prop                        gqdux`Person(friends:{intersect:{id:"b"}})`
+Collection+Prop             gqdux`Person(intersection:{id:"a"},friends:{intersect:{id:"a"}})`
+Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"a"}})`
+
 // query
-Collection                  g`Person(intersect:{id:"a"}){id,friends{id}}`
+Collection                  gqdux`Person(intersect:{id:"a"}){id,friends{id}}`
 ```
 
 Try it [on codepen](link)
 
+## Authoring Transducers
+
+```js
+
+const schema=`
+  type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
+  type Pet{id:ID,name:String}
+  scalar SomeScalar
+`;
+
+// indexSchema.js: indexSchema(schema)-> queryMeta (recursive schema references)
+
+const initialState = {
+  SomeScalar:1,
+  Person:{
+    a:{id:'a',name:'A',best:'b',otherbest:'c',nicknames:["AA","AAA"],friends:['b','c'],pet:'x'},
+    b:{id:'b',name:'B',best:'a',friends:['a'],nicknames:["BB","BBB"]},
+    c:{id:'c',name:'C',best:'b',friends:['b'],nicknames:[]},
+  },
+  Pet:{
+    x:{id:'x',name:'X'},
+    y:{id:'y',name:'Y'},
+  },
+};
+
+
+// schemaToQuerySelector(schema)-> selectionMeta (recursive schema references)
+```
+
+
 ## Quick Start (Redux + React)
-
-## TODO
-
-- set up build with snowpack
-- convert select to use the query tree instead of a separate walk
-- make selectPath always return a list for lists, not condense down single objects
-- dispatch >1 change in batch
-- decide where domain concept components should go
-- decide where derivations should go
-- Type checking in development
-- Sort transducer
 
 ## API
 
@@ -103,29 +127,6 @@ Standard set operations for simplicity and to minimize mismatch between author a
 - intersect
 - union
 - subtract
-
-### Operation Syntax (2 ways to use)
-
-```js
-import {createStore} from 'redux';
-import {initReducer,initGqdux} from 'gqdux';
-
-const {gqdux:g} = initGqdux({gql,schema,store:createStore(initReducer(schema))});
-
-// mutation
-Collection                  g`Person(intersect:{id:"a"})`
-Prop                        g`Person(friends:{intersect:{id:"b"}})`
-```
-
-### Select/Change Syntax (2)
-
-change(`Person(intersect:{id:"a"})`)
-select(`Person(intersect:{id:"a"}){id,friends}`)
-
-
-### Examples
-
-TODO
 
 ## Testing
 

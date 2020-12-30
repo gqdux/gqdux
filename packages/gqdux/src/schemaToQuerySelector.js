@@ -123,22 +123,16 @@ const mapQueryFactory=(schema={},transducers={},getListItemCombiner,getListItemA
     if (meta.nodeType==='objectId')                return isMutation
       ? ([vP,vN,vNP,rN,rNP])=>mapObject([vP,vN,vNP,rN,rNP])
       : ([vP,vN,vNP,rN,rNP])=>mapObject([vP,rN[meta.defName][vN],rNP?.[meta.defName]?.[vN],rN,rNP]);
-    
     if (meta.nodeType==='objectScalarList')        return tdMapVnorm(compose(
       tdMap((arr,i,vNi)=>vNi),
       argTransducers[sName]??identity,
       passedTransducer,
     ),getListItemAccumulator(meta),getListItemCombiner(meta));
-    // {Person:{
-    //   a:{id:"a",friends:["b","c"]}
-    //   b:{id:"a",friends:["a"]}
-    // }}
     if (meta.nodeType==='objectObjectList')        return tdMapVnorm(compose(
       tdMap(([vP,vN,vNP,rN,rNP],id,vNi)=>mapObject([vP?.[id],vN?.[id],vNP?.[id],rN,rNP])),
       argTransducers[sName]??identity,
       passedTransducer,
     ),getListItemAccumulator(meta),getListItemCombiner(meta));
-    // {friends:['a','c']}
     if (meta.nodeType==='objectIdList')            return tdMapVnorm(compose(
       // map key and val
       (isMutation
