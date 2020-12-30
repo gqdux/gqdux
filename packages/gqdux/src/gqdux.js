@@ -7,6 +7,7 @@ export {getSelectPath} from './getSelectPath';
 import {schemaToDepthFirstOperationMapper} from './schemaToQuerySelector';
 import {intersection,subtract,union} from './transducers';
 import {appendArrayReducer, appendObjectReducer, stubArray, stubObject} from '@a-laughlin/fp-utils';
+
 export const initGqdux = ({
   gql,
   schema,
@@ -16,11 +17,15 @@ export const initGqdux = ({
   changeListItemCombiner=({nodeType})=>nodeType==='objectScalarList'||nodeType==='objectIdList'?appendArrayReducer:appendObjectReducer,
   getChangeListItemAccumulator=({nodeType})=>nodeType==='objectScalarList'||nodeType==='objectIdList'?stubArray:stubObject,
 }={})=>{
+  // maps redux state to a denormalized subset of the state for the chosen selections
   const getDenormalizedStateMapper = schemaToDepthFirstOperationMapper( schema, {intersection,subtract,union,...listTransducers},queryListItemCombiner,getQueryListItemAccumulator);
+  
+  // maps redux state to another normalized redux state
   const getNormalizedStateMapper = schemaToDepthFirstOperationMapper( schema, {intersection,subtract,union,...listTransducers},changeListItemCombiner,getChangeListItemAccumulator);
   return {
     // rootReducer (mutation) case
-    initReducer:(prevState,{type='mutation',payload:[query={},variables={}]=[]})=>{
+    initReducer:(prevState, action)=>{
+      const {type='mutation',payload:[query={},variables={}]=[]} = action;
       return (type!=='mutation')
         ? prevState
         : getNormalizedStateMapper(query,variables)([
