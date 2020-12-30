@@ -97,22 +97,18 @@ const modules = readdirSync('packages')
         plugins:[terserPlugin]
       };
       
-      // if(format==='umd'){
-        const globalArgs={
-          name:snakeToStartCase(dir),
-          globals:{
-            react:'react',
-            xstream:'xstream',
-            '@a-laughlin/fp-utils':'fpUtils',
-            '@a-laughlin/style-string-to-object':'styleStringToObject',
-            'graphql-tag':'gql',
-            'graphql-tag-bundled':'gql',
-          }
-        };
-        if(dir==='graphql-tag-bundled') Object.assign(globalArgs,{name:'gql',exports:'default'});
-        Object.assign(dev,globalArgs);
-        Object.assign(prod,globalArgs);
-      // }
+      const globalArgs={
+        name:snakeToStartCase(dir),
+        globals:{
+          react:'react',
+          '@a-laughlin/fp-utils':'fpUtils',
+          'graphql-tag':'gql',
+          'graphql-tag-bundled':'gql',
+        }
+      };
+      if(dir==='graphql-tag-bundled') Object.assign(globalArgs,{name:'gql',exports:'default'});
+      Object.assign(dev,globalArgs);
+      Object.assign(prod,globalArgs);
       return [dev, prod];
     }),
   plugins:[

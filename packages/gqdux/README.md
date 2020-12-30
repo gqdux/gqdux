@@ -42,7 +42,7 @@ Concerns Separation
 
 ```js
 import {createStore} from 'redux';
-import {initReducer,initGqdux} from 'gqdux';
+import {initGqdux} from 'gqdux';
 
 const schema=`
   type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
@@ -59,8 +59,8 @@ const initialState = {
 };
 
 
-const {gqdux} = initGqdux({gql,schema,store:createStore(initReducer(schema),initialState)});
-
+const gqdux = initGqdux({schema,store:createStore(initGqdux({schema}),initialState)});
+const selectFullPath = {useSelectPath}=
 
 // change
 Collection                  gqdux`Person(intersection:{id:"a"})`

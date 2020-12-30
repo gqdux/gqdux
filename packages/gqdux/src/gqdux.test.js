@@ -2,16 +2,17 @@ import {createStore,combineReducers} from 'redux';
 import {useState,useEffect}from 'react';
 import {
   schemaToReducerMap,
-  schemaToQuerySelector,
   schemaToMutationReducer,
   getSelectFullPath,
   getSelectPath,
   pathSelectorToReactHook,
+  initGqdux
 } from './gqdux';
 
 import { renderHook, act } from '@testing-library/react-hooks'
 import gql from 'graphql-tag-bundled';
 import { isObjectLike, mapToObject, over, pick, pipe, tdTap, transToObject } from '@a-laughlin/fp-utils';
+
 
 import { CustomConsole, LogType, LogMessage } from '@jest/console';
 import {ErrorWithStack, formatTime} from 'jest-util';
@@ -113,15 +114,15 @@ describe("schemaToReducerMap", () => {
     expect(result).not.toBe(state.Person);
   });
 });
-describe("schemaToQuerySelector", () => {
-  let schema,state,querier;
+describe("initGqdux selector (query) case", () => {
+  let schema,state,initSelector;
   beforeAll(()=>{
     schema=gql`
       type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
       type Pet{id:ID,name:String}
       scalar SomeScalar
     `;
-    querier = schemaToQuerySelector(schema);
+    ({initSelector} = initGqdux({schema}));
   });
   beforeEach(()=>{
     state={
@@ -138,7 +139,7 @@ describe("schemaToQuerySelector", () => {
     };
   });
   afterAll(()=>{
-    schema=state=querier=null;
+    schema=state=initSelector=null;
   });
   // it.only("should traverse arguments",()=>{
     
@@ -161,60 +162,60 @@ describe("schemaToQuerySelector", () => {
   // });
   it("should query collections",()=>{
     const query = gql(`{Person{id}}`);
-    const queryFn = querier(query);
+    const queryFn = initSelector(query);
     const result1 = queryFn(state);
     expect(result1).toEqual({Person:{a:{id:'a'}, b:{id:'b'}, c:{id:'c'}}});
   });
   it(`should denormalize item subsets with constants Person(intersection:{id:"a"}){best{id}}`,()=>{
     const query = gql(`{Person(intersection:{id:"a"}){best{id}}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
   });
   it("should denormalize item subsets with variables",()=>{
     const query = gql(`{Person(intersection:{id:$id}){best{id}}}`);
-    const result1 = querier(query,{id:'a'})(state);
+    const result1 = initSelector(query,{id:'a'})(state);
     expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
   });
   it("should denormalize item subsets with non-id variables",()=>{
     const query = gql(`{Person(intersection:{best:$best}){best{id}}}`);
-    const result1 = querier(query,{best:'b'})(state);
+    const result1 = initSelector(query,{best:'b'})(state);
     expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
   });
   it("should denormalize item subsets with default variables",()=>{
     const query = gql(`query getPerson($id: ID = "a"){Person(intersection:{id:$id}){best{id}}}`);
-    const result1 = querier(query)(state);
+    const result1 = initSelector(query)(state);
     expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
   });
   it("should denormalize item subsets with non-id default variables",()=>{
     const query = gql(`query getPerson($best: String = "b"){Person(intersection:{best:$best}){best{id}}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
   });
 
   it("should denormalize lists of ids",()=>{
     const query = gql(`{Person{id,friends{id}}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({Person:selectNestedProps(state.Person)('a,b,c','id,friends','id')});
   });
   it("should denormalize item subsets with non-id constants",()=>{
     const query = gql(`{Person(intersection:{best:"b"}){best{id}}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
   });
 
   it("should query multiple scalar props",()=>{
     const query = gql(`{Person(intersection:{id:$id}){id,name}}`);
-    const result1=querier(query,{id:'a'})(state);
+    const result1=initSelector(query,{id:'a'})(state);
     expect(result1).toEqual({Person:{a:{id:'a',name:'A'}}});
   });
   it("should query a scalar and object prop",()=>{
     const query = gql(`{Person(intersection:{id:$id}){id,best{id}}}`);
-    const result1=querier(query,{id:'a'})(state);
+    const result1=initSelector(query,{id:'a'})(state);
     expect(result1).toEqual({Person:{a:{id:'a',best:{id:'b'}}}});
   });
   it("should query multiple object props",()=>{
     const query = gql(`{Person(intersection:{id:"a"}){best{id},otherbest{id}}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({Person:{a:{best:{id:'b'},otherbest:{id:'c'}}}});
   });
   // it("should behave the same with (intersection:{...}) and (...)",()=>{
@@ -231,47 +232,47 @@ describe("schemaToQuerySelector", () => {
   //   enable fns to be implemented on front or back-end
   it("should accept variables named differently than the key",()=>{
     let query = gql(`{Person(intersection:{id:$xyz}) {best{id},otherbest{id}}}`);
-    let result1=querier(query,{xyz:"a"})(state);
+    let result1=initSelector(query,{xyz:"a"})(state);
     expect(result1).toEqual({Person:{a:{best:{id:'b'},otherbest:{id:'c'}}}});
   });
   it("should query objects deeply",()=>{
     const query = gql(`{Person(intersection:{id:"a"}){best{best{best{best{best{best{best{best{best{best{id}}}}}}}}}}}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({Person:{a:{best:{best:{best:{best:{best:{best:{best:{best:{best:{best:{id:'a'}}}}}}}}}}}}});
   });
   it("should query other types",()=>{
     const query = gql(`{Person(intersection:{id:"a"}){pet{id}}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({Person:{a:{pet:{id:'x'}}}});
   });
   it("should query scalars",()=>{
     const query = gql(`{SomeScalar}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({SomeScalar:1});
   });
   it("should query scalar lists",()=>{
     const query = gql(`{Person(intersection:{id:"a"}){nicknames}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({Person:{a:{nicknames:["AA","AAA"]}}});
   });
   it("should query scalar list items",()=>{
     const query = gql(`{Person(intersection:{id:"a"},nicknames:{intersection:"AA"}){id,nicknames}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({Person:{a:{id:"a",nicknames:["AA"]}}});
   });
   it("should query object lists",()=>{
     const query = gql(`{Person(intersection:{id:"a"}){friends{id}}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1).toEqual({Person:{a:{friends:{b:{id:'b'},c:{id:'c'}}}}});
   });
   it("should return an error when selecting objects without ids",()=>{
     const query = gql(`{Person(intersection:{id:"a"}){friends}}`);
-    const result1=querier(query)(state);
+    const result1=initSelector(query)(state);
     expect(result1.Person.a.friends).toEqual(new Error(`objects must have selections`));
   });
   it("should return unchanged values",()=>{
     const query=gql(`{Person{id}}`);
-    const queryFn = querier(query);
+    const queryFn = initSelector(query);
     const prevRootStates=[state,{...state},{...state,Person:{...state.Person,c:{...state.Person.c}}}];
     const prevDenormRoots=prevRootStates.map(s=>queryFn(state,s));
     prevRootStates.forEach((prevRoot)=>{
@@ -500,16 +501,16 @@ describe("useSelectPath",()=>{
 // });
 
 
-describe("schemaToMutationReducer",()=>{
+describe("initGqdux rootReducer (mutation) case",()=>{
   // integration test React.useState,redux.combineReducers(schemaReducerMap),schemaToQuerySelector(schema)
-  let store,useQuery,schema,dispatchMutation,selectFullPath,cleanupSelectFullPath,rootReducer,state,selectPersonProps;
+  let store,useQuery,schema,dispatchMutation,selectFullPath,cleanupSelectFullPath,initReducer,state,selectPersonProps;
   schema = gql`
     type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
     type Pet{id:ID,name:String}
     scalar SomeScalar
   `;
-  rootReducer = schemaToMutationReducer(schema);
-  
+  ({initReducer} = initGqdux({schema}));
+
   beforeEach(()=>{
     state={
       SomeScalar:1,
@@ -524,7 +525,7 @@ describe("schemaToMutationReducer",()=>{
       },
     }
     selectPersonProps=(...lists)=>({Person:selectNestedProps(state.Person)(...lists)});
-    store = createStore(rootReducer,state);
+    store = createStore(initReducer,state);
     dispatchMutation=(query,vars)=>{
       store.dispatch({type:'mutation',payload:[gql`{${query}}`,vars]});
     };
@@ -536,7 +537,7 @@ describe("schemaToMutationReducer",()=>{
     cleanupSelectFullPath()
   })
   afterAll(()=>{
-    schema=state=store=useQuery=dispatchMutation=cleanupSelectFullPath=selectFullPath=rootReducer=selectPersonProps=undefined;
+    schema=state=store=useQuery=dispatchMutation=cleanupSelectFullPath=selectFullPath=initReducer=selectPersonProps=undefined;
   });
   
   
