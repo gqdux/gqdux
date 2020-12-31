@@ -1,5 +1,7 @@
 import { isObjectLike, mapToObject } from '@a-laughlin/fp-utils';
 import { getSelectFullPath } from './gqdux';
+// tests exist for this but are commented out until the 
+// see useSelectPath in gqdux.test.js
 export const getSelectPath=(schema,gql,store)=>{
   const {selectFullPath,cleanupSelectFullPath}=getSelectFullPath(schema,gql,store);
   let lastFullPathResult;

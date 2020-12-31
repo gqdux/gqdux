@@ -50,16 +50,13 @@ const getArgsPopulator = (vars)=>{
 
 export const schemaToOperationMapper=(schema={},transducers={},getListItemCombiner,getListItemAccumulator)=>(
   function operationToStateMapper(query={},passedVariables={}){
-    const queryMeta=indexSchema(schema)._query;
-    const vars=variableDefinitionsToObject(query.definitions[0].variableDefinitions||[],passedVariables);
+    const {definitions:[{variableDefinitions=[],selectionSet:{selections:[{selectionSet,arguments:a=[]}]}}]}=query;
+    const isMutation=selectionSet===undefined&&a.length;
+    const vars=variableDefinitionsToObject(variableDefinitions,passedVariables);
     const getArgs = getArgsPopulator(vars);
-    const {definitions:[{selectionSet:{selections:[{selectionSet:s,arguments:a=[]}]}}]}=query;
-    const isMutation=s===undefined&&a.length;
-    
-    return operationLevelToStateLevelMapper(queryMeta,query.definitions[0]);
     
     // returns a tree of mapping functions that walk the state with the corresponding query and schema data.
-    function operationLevelToStateLevelMapper(meta, selection, passedTransducer=identity){
+    return (function operationLevelToStateLevelMapper(meta, selection, passedTransducer=identity){
       const sName=meta.defName==='_query'?'_query':selection.name.value;
       if(meta.fieldName!==sName) throw new Error(`fieldName ${meta.fieldName} must match s.name.value ${sName} `);
       
@@ -83,19 +80,20 @@ export const schemaToOperationMapper=(schema={},transducers={},getListItemCombin
             aVal = isObjectLike(aVal)&&!isArray(aVal)?aVal:{[a.name.value]:aVal};
             composeTransducer(sName,td(meta,aVal));
           });
+          else throw new Error(`field kind "${kind}" not supported yet"`);
         } else if (fields) fields.forEach(a=>{
           let atd = transducers[a.name.value];
           if (!atd)throw new Error(`implicit args not supported for array yet`);
           composeTransducer(aName,atd(meta[aName],getArgs(a.value)));
         });
-        else throw new Error(`shouldn't be hit`);
+        else throw new Error(`field kind "${kind}" not supported yet"`);
       }
       // args forest, selections forest, query tree, state tree,
       // different ways to combine them
       // - pass siblingReducer to previous
-      // - manually filter on non-transducer props
+      // - hard-code filter on non-transducer props
       // - compose them somehow... difficult since props transducers are recursed, and prev ones mean the need to split/apply/combine the rest of the pipe.
-      // 
+      
       const selectionObjs=transToObject((o,a)=>{o[a.name.value]=a})(selection.selectionSet?.selections??[]);
       // Walk the query tree beforehand to enclose the correct meta level for each childSelectors
       const selectionMappers=transToObject((o,m,k)=>{
@@ -128,6 +126,6 @@ export const schemaToOperationMapper=(schema={},transducers={},getListItemCombin
         passedTransducer,
       ),getListItemAccumulator(meta),getListItemCombiner(meta));
       throw new Error(`${meta.nodeType}:${meta.defName} shouldn't be hit`);
-    }
+    })(indexSchema(schema)._query, query.definitions[0]);
   }
 );

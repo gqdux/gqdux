@@ -1,13 +1,8 @@
 import {createStore,combineReducers} from 'redux/es/redux.js';
 import {useState,useEffect}from 'react';
-import {
-  schemaToReducerMap,
-  schemaToMutationReducer,
-  getSelectFullPath,
-  pathSelectorToReactHook,
-  initGqdux
-} from './gqdux';
-import {getSelectPath} from './getSelectPath';
+import {initGqdux} from './gqdux';
+import {schemaToReducerMap} from './schemaToReducerMap';
+// import {getSelectPath} from './getSelectPath';
 
 import { renderHook, act } from '@testing-library/react-hooks'
 import gql from 'graphql-tag-bundled';
@@ -52,78 +47,15 @@ const selectNestedProps=(rootObj)=>{
   }
 }
 
-describe("schemaToReducerMap", () => {
-  let state;
-  let schema=gql(`
-    type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
-    type Pet{id:ID,name:String}
-    scalar SomeScalar
-  `);
-  let reducerMap = schemaToReducerMap(schema);
-  
-  beforeEach(()=>{
-    state={
-      SomeScalar:1,
-      SomeThingNotInSchema:1,
-      Person:{
-        a:{id:'a',name:'A',best:'b',otherbest:'c',nicknames:["AA","AAA"],friends:['b','c'],pet:'x'},
-        b:{id:'b',name:'B',best:'a',friends:['a']},
-        c:{id:'c',name:'C',best:'a',friends:['a']},
-      },
-      Pet:{
-        x:{id:'x',name:'X'},
-        y:{id:'y',name:'Y'},
-      },
-    };
-  });
-  afterAll(()=>{
-    schema=state=reducerMap=null;
-  });
-  it("should generate keys for each type ,plus scalars",()=>{
-    expect(Object.keys(reducerMap).sort())
-    .toEqual(['Person','Pet','SomeScalar','Boolean','Float','ID','Int','String'].sort());
-  });
-  it("should read values as default",()=>{
-    expect(reducerMap.Person(state.Person))
-    .toBe(state.Person);
-  });
-  it("should get scalar values",()=>{
-    expect(reducerMap.SomeScalar(state.SomeScalar)).toBe(1);
-  });
-  it("should set scalar values",()=>{
-    expect(reducerMap.SomeScalar(state.SomeScalar,{type:'SOMESCALAR_SET',payload:2})).toBe(2);
-  });
-  it("should enable deletions from a collection",()=>{
-    const result = reducerMap.Person(state.Person,{type:'PERSON_SUBTRACT',payload:{c:{id:'c'}}});
-    expect(result).not.toBe(state.Person);
-    expect(result.a).toBe(state.Person.a);
-    expect(result.b).toBe(state.Person.b);
-    const expected = {...state.Person};
-    delete expected.c;
-    expect(result).toEqual(expected);
-  });
-  it("should return the original if nothing to delete",()=>{
-    expect(reducerMap.Person(state.Person,{type:'PERSON_SUBTRACT',payload:{d:{id:'d'}}}))
-    .toBe(state.Person);
-  });
-
-  it("should enable creations|unions",()=>{
-    const c={id:'c',best:'a',friends:['a']};
-    const result = reducerMap.Person(state.Person,{type:'PERSON_UNION',payload:{c}});
-    expect(result).toEqual({...state.Person,c});
-    expect(result).not.toBe(state.Person);
-  });
-});
-
 describe("initGqdux selector (query) case", () => {
-  let schema,state,initSelector;
+  let schema,state,getSelector,selector,store;
   beforeAll(()=>{
     schema=gql`
       type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
       type Pet{id:ID,name:String}
       scalar SomeScalar
     `;
-    ({initSelector} = initGqdux({schema}));
+    ({getSelector} = initGqdux({schema}));
   });
   beforeEach(()=>{
     state={
@@ -138,75 +70,67 @@ describe("initGqdux selector (query) case", () => {
         y:{id:'y',name:'Y'},
       },
     };
+    store=createStore(x=>x,state);
+    selector=getSelector(store);
+    // console.log(` selector:`,selector,)
   });
   afterAll(()=>{
-    schema=state=initSelector=null;
+    selector.cleanup();
+    schema=store=state=getSelector=selector=null;
   });
 
   it("should query collections",()=>{
-    const query = gql(`{Person{id}}`);
-    const queryFn = initSelector(query);
-    const result1 = queryFn(state);
-    expect(result1).toEqual({Person:{a:{id:'a'}, b:{id:'b'}, c:{id:'c'}}});
+    expect(selector(`Person{id}`)).toEqual({Person:{a:{id:'a'}, b:{id:'b'}, c:{id:'c'}}});
   });
   it(`should denormalize item subsets with constants Person(intersection:{id:"a"}){best{id}}`,()=>{
-    const query = gql(`{Person(intersection:{id:"a"}){best{id}}}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({
+    expect(selector(`Person(intersection:{id:"a"}){best{id}}`)).toEqual({
       Person:{
         a:{
-          // best:'a',normalized version
-          best:{id:'b'} //denormalized version
+          // best:'b',normalized version, the id
+          best:{id:'b'} //denormalized version, the object with that id
         }
       }
     });
   });
   it("should denormalize item subsets with variables",()=>{
-    const query = gql(`{Person(intersection:{id:$id}){best{id}}}`);
-    const result1 = initSelector(query,{id:'a'})(state);
-    expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
+    expect(selector(`Person(intersection:{id:$id}){best{id}}`,{id:'a'}))
+    .toEqual({Person:{a:{best:{id:'b'}}}});
   });
   it("should denormalize item subsets with non-id variables",()=>{
-    const query = gql(`{Person(intersection:{best:$best}){best{id}}}`);
-    const result1 = initSelector(query,{best:'b'})(state);
-    expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
+    expect(selector(`Person(intersection:{best:$best}){best{id}}`,{best:'b'}))
+    .toEqual({Person:{a:{best:{id:'b'}}}});
+  });
+  it("accepts pre-parsed gql queries",()=>{
+    expect(selector(gql`{Person(intersection:{best:$best}){best{id}}}`,{best:'b'}))
+    .toEqual({Person:{a:{best:{id:'b'}}}});
   });
   it("should denormalize item subsets with default variables",()=>{
-    const query = gql(`query getPerson($id: ID = "a"){Person(intersection:{id:$id}){best{id}}}`);
-    const result1 = initSelector(query)(state);
-    expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
+    expect(selector(gql`query getPerson($id: ID = "a"){Person(intersection:{id:$id}){best{id}}}`))
+    .toEqual({Person:{a:{best:{id:'b'}}}});
   });
   it("should denormalize item subsets with non-id default variables",()=>{
-    const query = gql(`query getPerson($best: String = "b"){Person(intersection:{best:$best}){best{id}}}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
+    expect(selector(gql`query getPerson($best: String = "b"){Person(intersection:{best:$best}){best{id}}}`))
+    .toEqual({Person:{a:{best:{id:'b'}}}});
   });
-
   it("should denormalize lists of ids",()=>{
-    const query = gql(`{Person{id,friends{id}}}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({Person:selectNestedProps(state.Person)('a,b,c','id,friends','id')});
+    expect(selector(`Person{id,friends{id}}`))
+    .toEqual({Person:selectNestedProps(state.Person)('a,b,c','id,friends','id')});
   });
   it("should denormalize item subsets with non-id constants",()=>{
-    const query = gql(`{Person(intersection:{best:"b"}){best{id}}}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
+    expect(selector(`Person(intersection:{best:"b"}){best{id}}`))
+    .toEqual({Person:{a:{best:{id:'b'}}}});
   });
-
   it("should query multiple scalar props",()=>{
-    const query = gql(`{Person(intersection:{id:$id}){id,name}}`);
-    const result1=initSelector(query,{id:'a'})(state);
-    expect(result1).toEqual({Person:{a:{id:'a',name:'A'}}});
+    expect(selector(`Person(intersection:{id:$id}){id,name}`,{id:'a'}))
+    .toEqual({Person:{a:{id:'a',name:'A'}}});
   });
   it("should query a scalar and object prop",()=>{
-    const query = gql(`{Person(intersection:{id:$id}){id,best{id}}}`);
-    const result1=initSelector(query,{id:'a'})(state);
-    expect(result1).toEqual({Person:{a:{id:'a',best:{id:'b'}}}});
+    expect(selector(`Person(intersection:{id:$id}){id,best{id}}`,{id:'a'}))
+    .toEqual({Person:{a:{id:'a',best:{id:'b'}}}});
   });
   it("should query multiple object props",()=>{
-    const query = gql(`{Person(intersection:{id:"a"}){best{id},otherbest{id}}}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({Person:{a:{best:{id:'b'},otherbest:{id:'c'}}}});
+    expect(selector(`Person(intersection:{id:"a"}){best{id},otherbest{id}}`))
+    .toEqual({Person:{a:{best:{id:'b'},otherbest:{id:'c'}}}});
   });
   // it("should behave the same with (intersection:{...}) and (...)",()=>{
   //   let query = gql(`{Person(id:"a") {best{id},otherbest{id}}}`);
@@ -221,66 +145,56 @@ describe("initGqdux selector (query) case", () => {
   //   make logic in components more difficult #pitofsuccess
   //   enable fns to be implemented on front or back-end
   it("should accept variables named differently than the key",()=>{
-    let query = gql(`{Person(intersection:{id:$xyz}) {best{id},otherbest{id}}}`);
-    let result1=initSelector(query,{xyz:"a"})(state);
-    expect(result1).toEqual({Person:{a:{best:{id:'b'},otherbest:{id:'c'}}}});
+    expect(selector(`Person(intersection:{id:$xyz}) {best{id},otherbest{id}}`,{xyz:"a"}))
+    .toEqual({Person:{a:{best:{id:'b'},otherbest:{id:'c'}}}});
   });
   it("should query objects deeply",()=>{
-    const query = gql(`{Person(intersection:{id:"a"}){best{best{best{best{best{best{best{best{best{best{id}}}}}}}}}}}}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({Person:{a:{best:{best:{best:{best:{best:{best:{best:{best:{best:{best:{id:'a'}}}}}}}}}}}}});
+    expect(selector(`Person(intersection:{id:"a"}){best{best{best{best{best{best{best{best{best{best{id}}}}}}}}}}}`))
+    .toEqual({Person:{a:{best:{best:{best:{best:{best:{best:{best:{best:{best:{best:{id:'a'}}}}}}}}}}}}});
   });
   it("should query other types",()=>{
-    const query = gql(`{Person(intersection:{id:"a"}){pet{id}}}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({Person:{a:{pet:{id:'x'}}}});
+    expect(selector(`Person(intersection:{id:"a"}){pet{id}}`))
+    .toEqual({Person:{a:{pet:{id:'x'}}}});
   });
   it("should query scalars",()=>{
-    const query = gql(`{SomeScalar}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({SomeScalar:1});
+    expect(selector(`SomeScalar`))
+    .toEqual({SomeScalar:1});
   });
   it("should query scalar lists",()=>{
-    const query = gql(`{Person(intersection:{id:"a"}){nicknames}}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({Person:{a:{nicknames:["AA","AAA"]}}});
+    expect(selector(`Person(intersection:{id:"a"}){nicknames}`))
+    .toEqual({Person:{a:{nicknames:["AA","AAA"]}}});
   });
   it("should query scalar list items",()=>{
-    const query = gql(`{Person(intersection:{id:"a"},nicknames:{intersection:"AA"}){id,nicknames}}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({Person:{a:{id:"a",nicknames:["AA"]}}});
+    expect(selector(`Person(intersection:{id:"a"},nicknames:{intersection:"AA"}){id,nicknames}`))
+    .toEqual({Person:{a:{id:"a",nicknames:["AA"]}}});
   });
   it("should query object lists",()=>{
-    const query = gql(`{Person(intersection:{id:"a"}){friends{id}}}`);
-    const result1=initSelector(query)(state);
-    expect(result1).toEqual({Person:{a:{friends:{b:{id:'b'},c:{id:'c'}}}}});
+    expect(selector(`Person(intersection:{id:"a"}){friends{id}}`))
+    .toEqual({Person:{a:{friends:{b:{id:'b'},c:{id:'c'}}}}});
   });
   it("should return an error when selecting objects without ids",()=>{
-    const query = gql(`{Person(intersection:{id:"a"}){friends}}`);
-    const result1=initSelector(query)(state);
-    expect(result1.Person.a.friends).toEqual(new Error(`objects must have selections`));
+    expect(selector(`Person(intersection:{id:"a"}){friends}`).Person.a.friends)
+    .toEqual(new Error(`objects must have selections`));
   });
-  it("should return unchanged values",()=>{
-    const query=gql(`{Person{id}}`);
-    const queryFn = initSelector(query);
-    const prevRootStates=[state,{...state},{...state,Person:{...state.Person,c:{...state.Person.c}}}];
-    const prevDenormRoots=prevRootStates.map(s=>queryFn(state,s));
-    prevRootStates.forEach((prevRoot)=>{
-      prevDenormRoots.forEach((prevDenormRoot)=>{
-        const denormRoot=queryFn(state,prevRoot,prevDenormRoot);
-        expect(state===prevRoot).toBe(denormRoot===prevDenormRoot);
-        expect(state.Person===prevRoot.Person).toBe(denormRoot.Person===prevDenormRoot.Person)
-        expect(denormRoot.Person.a).toBe(prevDenormRoot.Person.a);
-        expect(denormRoot.Person.c===prevDenormRoot.Person.c).toBe(state.Person.c===prevRoot.Person.c);
-      });
-    });
-  });
+  // it("should return unchanged values",()=>{
+  //   const prevRootStates=[state,{...state},{...state,Person:{...state.Person,c:{...state.Person.c}}}];
+  //   const prevDenormRoots=prevRootStates.map(s=>selector(`Person{id}`,{},s));
+  //   prevRootStates.forEach((prevRoot)=>{
+  //     prevDenormRoots.forEach((prevDenormRoot)=>{
+  //       const denormRoot=queryFn(state,prevRoot,prevDenormRoot);
+  //       expect(state===prevRoot).toBe(denormRoot===prevDenormRoot);
+  //       expect(state.Person===prevRoot.Person).toBe(denormRoot.Person===prevDenormRoot.Person)
+  //       expect(denormRoot.Person.a).toBe(prevDenormRoot.Person.a);
+  //       expect(denormRoot.Person.c===prevDenormRoot.Person.c).toBe(state.Person.c===prevRoot.Person.c);
+  //     });
+  //   });
+  // });
 });
 
 describe("getUseFullPath",()=>{
   // : integration test React.useState,redux.combineReducers(schemaReducerMap),schemaToQuerySelector(schema)
-  let store,useQuery,schema,selectFullPath,cleanupSelectFullPath,reducerMap,selectPersonProps;
-
+  let store,useQuery,schema,reducerMap,selectPersonProps;
+  
   beforeEach(()=>{
     schema = gql`
       type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
@@ -303,21 +217,18 @@ describe("getUseFullPath",()=>{
     });
     const sp = selectNestedProps(store.getState().Person);
     selectPersonProps=(...lists)=>({Person:sp(...lists)});
-    ({selectFullPath, cleanupSelectFullPath} = getSelectFullPath(schema,gql,store));
-    useQuery = pathSelectorToReactHook(selectFullPath,store,useState,useEffect);
+    useQuery = initGqdux({schema}).getSelectorHook(store,useState,useEffect);
   });
   afterEach(()=>{
-    cleanupSelectFullPath();
-    selectFullPath=null;
-    useQuery = null;
+    useQuery.cleanup();
   });
   afterAll(()=>{
-    store,useQuery,schema,selectFullPath,cleanupSelectFullPath,selectPersonProps,reducerMap=null;
+    store,useQuery,schema,selectPersonProps,reducerMap=null;
   });
   
   test('should work on scalars', () => {
     const { result } = renderHook(() =>{
-      return useQuery(`{SomeScalar}`);
+      return useQuery(`SomeScalar`);
     });
     expect(result.current).toEqual({SomeScalar:1});
     const prevState = store.getState();
@@ -331,7 +242,7 @@ describe("getUseFullPath",()=>{
     expect(store.getState().Person).toBe(prevState.Person);
   });
   test('should work on objects', () => {
-    const { result } = renderHook(() =>useQuery(`{Person{id}}`));
+    const { result } = renderHook(() =>useQuery(`Person{id}`));
     expect(result.current).toEqual({Person:{a:{id:'a'}, b:{id:'b'}, c:{id:'c'}}});
     act(()=>{store.dispatch({type:'PERSON_SUBTRACT',payload:'a'});})
     expect(result.current).toEqual({Person:{b:{id:'b'}, c:{id:'c'}}});
@@ -339,15 +250,15 @@ describe("getUseFullPath",()=>{
     expect(result.current).toEqual({Person:{b:{id:'b'}, c:{id:'c'},d:{id:'d'} }});
   });
   test('should work on nested object', () => {
-    const { result } = renderHook(() =>useQuery(`{Person{id,friends{id}}}`));
+    const { result } = renderHook(() =>useQuery(`Person{id,friends{id}}`));
     expect(result.current).toEqual(selectPersonProps('a,b,c','id,friends','id'));
     act(()=>{store.dispatch({type:'PERSON_SUBTRACT',payload:'a'});})
     expect(result.current).toEqual(selectPersonProps('b,c','id,friends','id'));
   });
   test('should update one with another changed', () => {
     const { result } = renderHook(() =>({
-      main:useQuery(`{Person{id}}`),
-      a:useQuery(`{Person(intersection:{id:"a"}){id}}`)
+      main:useQuery(`Person{id}`),
+      a:useQuery(`Person(intersection:{id:"a"}){id}`)
     }));
     expect(result.current.main).toEqual({Person:{a:{id:'a'}, b:{id:'b'}, c:{id:'c'}}});
     expect(result.current.a).toEqual({Person:{a:{id:'a'}}});
@@ -359,9 +270,9 @@ describe("getUseFullPath",()=>{
     expect(result.current.a).toEqual({Person:{a:{id:'a'}}});
   })
   test('should not update unchanged collection items', () => {
-    const { result } = renderHook(() =>useQuery(`{Person{id}}`));
-    const { result:resulta } = renderHook(() =>useQuery(`{Person(intersection:{id:"a"}){id}}`));
-    const { result:resultb } = renderHook(() =>useQuery(`{Person(intersection:{id:"b"}){id}}`));
+    const { result } = renderHook(() =>useQuery(`Person{id}`));
+    const { result:resulta } = renderHook(() =>useQuery(`Person(intersection:{id:"a"}){id}`));
+    const { result:resultb } = renderHook(() =>useQuery(`Person(intersection:{id:"b"}){id}`));
     const b=resultb.current.Person.b;
     expect(result.current).toEqual({Person:{a:{id:'a'}, b, c:{id:'c'}}});
     expect(resulta.current).toEqual({Person:{a:{id:'a'}}});
@@ -377,127 +288,10 @@ describe("getUseFullPath",()=>{
   })
 });
 
-describe("useSelectPath",()=>{
-  // : integration test React.useState,redux.combineReducers(schemaReducerMap),schemaToQuerySelector(schema)
-  let store,useSelectPath,schema,selectPath,cleanupSelectPath,reducerMap;
-  beforeEach(()=>{
-    schema = gql`
-      type Person{
-        id:ID         @boundary(values:123)
-        name:String   @boundary(values:["","fooo","really long string"])
-        best:Person
-        otherbest:Person
-        nicknames:[String]
-        friends:[Person]
-        pet:Pet
-      }
-      type Pet{
-        id:ID         @boundary(values:456)
-        name:String   @boundary(values:["","baaar","really long string"])
-      }
-      scalar SomeScalar
-    `;
-    reducerMap = schemaToReducerMap(schema);
-    const rootReducer = combineReducers(reducerMap);
-    store = createStore(rootReducer,{
-      SomeScalar:1,
-      Person:{
-        a:{id:'a',name:'A',best:'b',otherbest:'c',nicknames:["AA","AAA"],friends:['b','c'],pet:'x'},
-        b:{id:'b',name:'B',best:'a',friends:['a']},
-        c:{id:'c',name:'C',best:'a',friends:['a']},
-      },
-      Pet:{
-        x:{id:'x',name:'X'},
-        y:{id:'y',name:'Y'},
-      },
-    });
-    ({selectPath, cleanupSelectPath} = getSelectPath(schema,gql,store));
-    useSelectPath = pathSelectorToReactHook(selectPath,store,useState,useEffect);
-  });
-  afterEach(()=>{
-    cleanupSelectPath();
-  });
-  afterAll(()=>{
-    store=useSelectPath=schema=selectPath=cleanupSelectPath=reducerMap=null;
-  });
-  
-  test('should convert scalar props to their value', () => {
-    const { result } = renderHook(() =>useSelectPath(`{SomeScalar}`));
-    expect(result.current).toEqual(1);
-  });
-  test('should convert objects with a single selection to a collection of that selection', () => {
-    const { result } = renderHook(() =>useSelectPath(`{Person{id}}`));
-    expect(result.current).toEqual({a:'a',b:'b',c:'c'});
-  });
-  test('should convert a single selected object + selection to the selected value', () => {
-    const { result } = renderHook(() =>useSelectPath(`{Person(intersection:{id:"a"}){id}}`));
-    expect(result.current).toEqual('a');
-  });
-  test('should convert one object with two selections to the object with only that selection', () => {
-    const { result } = renderHook(() =>useSelectPath(`{Person(intersection:{id:"a"}){id,name}}`));
-    expect(result.current).toEqual({a:{id:'a',name:'A'}});
-  });
-  test('should convert a nested property selection to the selected value', () => {
-    const { result } = renderHook(() =>useSelectPath(`{Person(intersection:{id:"a"}){best{id}}}`));
-    expect(result.current).toEqual('b');
-  });
-  
-  test('supports permutation testing', () => {
-    
-    // figure out the syntax for looping in a test
-    // for (const {id,name,pet} of selectPath(`{Person(id:"a"){best{id}}}`)){
-      // const { result } = render(() =><div>useSelectPath(`{Person(id:"a"){best{id}}}`));
-    // }
-    expect(true).toBe(true);
-  });
-});
-
-// const values={
-//   id:['a'/* ,null,undefined */],
-//   friends:['b',{id:'b'},{best:'a'}/* ,null,undefined */],
-//   nicknames:['AA'/* ,null,undefined */],
-//   name:['A'/* ,null,undefined */],
-//   best:['b'/* ,null,undefined */],
-//   blank:[],
-// };
-// const valueStrings=mapToObject(v=>v.map(vv=>!isObjectLike(vv)?vv:('id' in vv?`{id:"${vv.id}"}`:`{best:"${vv.best}"}`)))(values);
-// const args=Object.entries(values).flatMap(([k,valueList])=>{
-//   if (k==='blank')return [[k,'','']];
-//   return valueList.flatMap((v,i)=>[ [k, valueStrings[k][i], v], [k,`[${valueStrings[k][i]}]`,[v]] ]);
-// });
-// const selectionList=['',...Object.keys(values)];
-// const selections=selectionList.flatMap(selection1=>selectionList.map(selection2=>{
-//   if(selection1===selection2&&selection1!=='')return [];
-//   return [selection1,selection2,selection1===''
-//     ?selection2===''
-//       ? ''
-//       : `{${selection2}}`
-//     :selection2===''
-//       ? `{${selection1}}`
-//       : `{${selection1},${selection2}}`];
-// }));
-
-// ['','intersection:'/* ,'subtract:' */].forEach(transducerName=>{
-//   args.forEach(([k,vStr,v],ai)=>{
-//     selections.forEach(([selection1,selection2,selectionStr],si)=>{
-//       if(ai<=1&&si<=1)console.log(` k:`,k,` vStr:`,vStr,` selectionStr:`,selectionStr,);
-//       test(`${transducerName} Person(${transducerName}{${k}:${vStr}})${selectionStr})`,()=>{
-//         const query = gql(`Person(${transducerName}:{${k}:${vStr}})${selectionStr})`);
-//         if(selectionStr===''){
-//           const { result } = renderHook(() =>useQuery(`{Person{id,friends{id}}}`));
-//           expect(result.current).toEqual(selectPersonProps('a,b,c','id,friends','id'));
-//         } else {
-
-//         }
-//       });
-//     });
-//   });
-// });
-
 
 describe("initGqdux rootReducer (mutation) case",()=>{
   // integration test React.useState,redux.combineReducers(schemaReducerMap),schemaToQuerySelector(schema)
-  let store,useQuery,schema,initDispatch,dispatchMutation,selectFullPath,cleanupSelectFullPath,rootReducer,state,selectPersonProps;
+  let store,useQuery,schema,getDispatch,dispatchMutation,getSelectorHook,rootReducer,state,selectPersonProps;
 
   beforeAll(()=>{
     schema = gql`
@@ -505,7 +299,7 @@ describe("initGqdux rootReducer (mutation) case",()=>{
       type Pet{id:ID,name:String}
       scalar SomeScalar
     `;
-    ({rootReducer,initDispatch} = initGqdux({schema}));
+    ({rootReducer,getDispatch,getSelectorHook} = initGqdux({schema}));
   });
 
   beforeEach(()=>{
@@ -523,23 +317,22 @@ describe("initGqdux rootReducer (mutation) case",()=>{
     }
     selectPersonProps=(...lists)=>({Person:selectNestedProps(state.Person)(...lists)});
     store = createStore(rootReducer,state);
-    ({selectFullPath,cleanupSelectFullPath}=getSelectFullPath(schema,gql,store));
-    dispatchMutation=initDispatch(store)
-    useQuery = pathSelectorToReactHook(selectFullPath,store,useState,useEffect);
+    dispatchMutation=getDispatch(store)
+    useQuery = getSelectorHook(store,useState,useEffect);
   });
 
   afterEach(()=>{
-    cleanupSelectFullPath();
+    useQuery.cleanup();
     dispatchMutation=null;
   })
   afterAll(()=>{
-    schema=state=store=useQuery=initDispatch=dispatchMutation=cleanupSelectFullPath=selectFullPath=rootReducer=selectPersonProps=undefined;
+    schema=state=store=useQuery=getDispatch=getSelectorHook=dispatchMutation=rootReducer=selectPersonProps=undefined;
   });
   
   
   // const filterMapBWithA=(a={x:x=>x})=>b=>{const c={};for (const k in a) c[a]=a[k](b[k],k,b);return c};
   test('Subtract: object subtract objectList value         Person(intersection:{id:"a"},friends:{subtract:{id:"b"}})',()=>{
-    const { result } = renderHook(() =>useQuery(`{Person{id,friends{id}}}`));
+    const { result } = renderHook(() =>useQuery(`Person{id,friends{id}}`));
     expect(result.current).toEqual(selectPersonProps('a,b,c','id,friends','id'));
     const{a:denormedA,b:denormedB,c:denormedC}=result.current.Person;
     let{a:stateA,b:stateB,c:stateC}=store.getState().Person;
@@ -606,7 +399,7 @@ describe("initGqdux rootReducer (mutation) case",()=>{
     const {b:stateB,c:stateC}=store.getState().Person;
     const bCopy = {...stateB};
     const cCopy = {...stateC};
-    const { result } = renderHook(() =>useQuery(`{Person{id}}`));
+    const { result } = renderHook(() =>useQuery(`Person{id}`));
     expect(result.current).toEqual({Person:{a:{id:'a'}, b:{id:'b'}, c:{id:'c'}}});
     const {b:selectedB,c:selectedC}=result.current.Person;
     // console.log(` selectedB:`,selectedB,)
@@ -670,7 +463,7 @@ describe("initGqdux rootReducer (mutation) case",()=>{
   test('Intersection: object intersection objectList value    Person(intersection:{id:"a"})',()=>{
     const {a:stateA,b:stateB,c:stateC}=store.getState().Person;
     const aCopy = {...stateA};
-    const { result } = renderHook(() =>useQuery(`{Person{id}}`));
+    const { result } = renderHook(() =>useQuery(`Person{id}`));
     expect(result.current).toEqual({Person:{a:{id:'a'}, b:{id:'b'}, c:{id:'c'}}});
     const {b:selectedB,c:selectedC}=result.current.Person;
     act(()=>{dispatchMutation(`Person(intersection:{id:"a"})`);})
@@ -697,6 +490,185 @@ describe("initGqdux rootReducer (mutation) case",()=>{
   })
 });
 
+
+// describe("useSelectPath (update this once selection is done via functions passed to initGqdux)",()=>{
+//   // : integration test React.useState,redux.combineReducers(schemaReducerMap),schemaToQuerySelector(schema)
+//   let store,useSelectPath,schema,selectPath,cleanupSelectPath,reducerMap;
+//   beforeEach(()=>{
+//     schema = gql`
+//       type Person{
+//         id:ID         @boundary(values:123)
+//         name:String   @boundary(values:["","fooo","really long string"])
+//         best:Person
+//         otherbest:Person
+//         nicknames:[String]
+//         friends:[Person]
+//         pet:Pet
+//       }
+//       type Pet{
+//         id:ID         @boundary(values:456)
+//         name:String   @boundary(values:["","baaar","really long string"])
+//       }
+//       scalar SomeScalar
+//     `;
+//     reducerMap = schemaToReducerMap(schema);
+//     const rootReducer = combineReducers(reducerMap);
+//     store = createStore(rootReducer,{
+//       SomeScalar:1,
+//       Person:{
+//         a:{id:'a',name:'A',best:'b',otherbest:'c',nicknames:["AA","AAA"],friends:['b','c'],pet:'x'},
+//         b:{id:'b',name:'B',best:'a',friends:['a']},
+//         c:{id:'c',name:'C',best:'a',friends:['a']},
+//       },
+//       Pet:{
+//         x:{id:'x',name:'X'},
+//         y:{id:'y',name:'Y'},
+//       },
+//     });
+//     ({selectPath, cleanupSelectPath} = getSelectPath(schema,gql,store));
+//     useSelectPath = pathSelectorToReactHook(selectPath,store,useState,useEffect);
+//   });
+//   afterEach(()=>{
+//     cleanupSelectPath();
+//   });
+//   afterAll(()=>{
+//     store=useSelectPath=schema=selectPath=cleanupSelectPath=reducerMap=null;
+//   });
+  
+//   test('should convert scalar props to their value', () => {
+//     const { result } = renderHook(() =>useSelectPath(`{SomeScalar}`));
+//     expect(result.current).toEqual(1);
+//   });
+//   test('should convert objects with a single selection to a collection of that selection', () => {
+//     const { result } = renderHook(() =>useSelectPath(`{Person{id}}`));
+//     expect(result.current).toEqual({a:'a',b:'b',c:'c'});
+//   });
+//   test('should convert a single selected object + selection to the selected value', () => {
+//     const { result } = renderHook(() =>useSelectPath(`{Person(intersection:{id:"a"}){id}}`));
+//     expect(result.current).toEqual('a');
+//   });
+//   test('should convert one object with two selections to the object with only that selection', () => {
+//     const { result } = renderHook(() =>useSelectPath(`{Person(intersection:{id:"a"}){id,name}}`));
+//     expect(result.current).toEqual({a:{id:'a',name:'A'}});
+//   });
+//   test('should convert a nested property selection to the selected value', () => {
+//     const { result } = renderHook(() =>useSelectPath(`{Person(intersection:{id:"a"}){best{id}}}`));
+//     expect(result.current).toEqual('b');
+//   });
+  
+//   test('supports permutation testing', () => {
+    
+//     // figure out the syntax for looping in a test
+//     // for (const {id,name,pet} of selectPath(`{Person(id:"a"){best{id}}}`)){
+//       // const { result } = render(() =><div>useSelectPath(`{Person(id:"a"){best{id}}}`));
+//     // }
+//     expect(true).toBe(true);
+//   });
+// });
+
+// const values={
+//   id:['a'/* ,null,undefined */],
+//   friends:['b',{id:'b'},{best:'a'}/* ,null,undefined */],
+//   nicknames:['AA'/* ,null,undefined */],
+//   name:['A'/* ,null,undefined */],
+//   best:['b'/* ,null,undefined */],
+//   blank:[],
+// };
+// const valueStrings=mapToObject(v=>v.map(vv=>!isObjectLike(vv)?vv:('id' in vv?`{id:"${vv.id}"}`:`{best:"${vv.best}"}`)))(values);
+// const args=Object.entries(values).flatMap(([k,valueList])=>{
+//   if (k==='blank')return [[k,'','']];
+//   return valueList.flatMap((v,i)=>[ [k, valueStrings[k][i], v], [k,`[${valueStrings[k][i]}]`,[v]] ]);
+// });
+// const selectionList=['',...Object.keys(values)];
+// const selections=selectionList.flatMap(selection1=>selectionList.map(selection2=>{
+//   if(selection1===selection2&&selection1!=='')return [];
+//   return [selection1,selection2,selection1===''
+//     ?selection2===''
+//       ? ''
+//       : `{${selection2}}`
+//     :selection2===''
+//       ? `{${selection1}}`
+//       : `{${selection1},${selection2}}`];
+// }));
+
+// ['','intersection:'/* ,'subtract:' */].forEach(transducerName=>{
+//   args.forEach(([k,vStr,v],ai)=>{
+//     selections.forEach(([selection1,selection2,selectionStr],si)=>{
+//       if(ai<=1&&si<=1)console.log(` k:`,k,` vStr:`,vStr,` selectionStr:`,selectionStr,);
+//       test(`${transducerName} Person(${transducerName}{${k}:${vStr}})${selectionStr})`,()=>{
+//         const query = gql(`Person(${transducerName}:{${k}:${vStr}})${selectionStr})`);
+//         if(selectionStr===''){
+//           const { result } = renderHook(() =>useQuery(`{Person{id,friends{id}}}`));
+//           expect(result.current).toEqual(selectPersonProps('a,b,c','id,friends','id'));
+//         } else {
+
+//         }
+//       });
+//     });
+//   });
+// });
+describe("schemaToReducerMap (secondary API if using names instead of getDispatch)", () => {
+  let state;
+  let schema=gql(`
+    type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
+    type Pet{id:ID,name:String}
+    scalar SomeScalar
+  `);
+  let reducerMap = schemaToReducerMap(schema);
+  
+  beforeEach(()=>{
+    state={
+      SomeScalar:1,
+      SomeThingNotInSchema:1,
+      Person:{
+        a:{id:'a',name:'A',best:'b',otherbest:'c',nicknames:["AA","AAA"],friends:['b','c'],pet:'x'},
+        b:{id:'b',name:'B',best:'a',friends:['a']},
+        c:{id:'c',name:'C',best:'a',friends:['a']},
+      },
+      Pet:{
+        x:{id:'x',name:'X'},
+        y:{id:'y',name:'Y'},
+      },
+    };
+  });
+  afterAll(()=>{
+    schema=state=reducerMap=null;
+  });
+  it("should generate keys for each type ,plus scalars",()=>{
+    expect(Object.keys(reducerMap).sort())
+    .toEqual(['Person','Pet','SomeScalar','Boolean','Float','ID','Int','String'].sort());
+  });
+  it("should read values as default",()=>{
+    expect(reducerMap.Person(state.Person))
+    .toBe(state.Person);
+  });
+  it("should get scalar values",()=>{
+    expect(reducerMap.SomeScalar(state.SomeScalar)).toBe(1);
+  });
+  it("should set scalar values",()=>{
+    expect(reducerMap.SomeScalar(state.SomeScalar,{type:'SOMESCALAR_SET',payload:2})).toBe(2);
+  });
+  it("should enable deletions from a collection",()=>{
+    const result = reducerMap.Person(state.Person,{type:'PERSON_SUBTRACT',payload:{c:{id:'c'}}});
+    expect(result).not.toBe(state.Person);
+    expect(result.a).toBe(state.Person.a);
+    expect(result.b).toBe(state.Person.b);
+    const expected = {...state.Person};
+    delete expected.c;
+    expect(result).toEqual(expected);
+  });
+  it("should return the original if nothing to delete",()=>{
+    expect(reducerMap.Person(state.Person,{type:'PERSON_SUBTRACT',payload:{d:{id:'d'}}}))
+    .toBe(state.Person);
+  });
+
+  it("should enable creations|unions",()=>{
+    const c={id:'c',best:'a',friends:['a']};
+    const result = reducerMap.Person(state.Person,{type:'PERSON_UNION',payload:{c}});
+    expect(result).toEqual({...state.Person,c});
+    expect(result).not.toBe(state.Person);
+  });
+});
 
 /* eslint-disable jest/no-commented-out-tests */
 // // describe("Spec Section 3: Type System", () => {

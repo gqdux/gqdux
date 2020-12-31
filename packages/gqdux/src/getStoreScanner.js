@@ -13,7 +13,7 @@ export const getStoreScanner = memoize(store=>{
     }
     subscribers.add(fn);
     const result={};
-    result.withPrevState=(...args)=>fn(lastState,curState,...args);
+    result.withPrevState=(...args)=>fn(curState,lastState,...args);
     result.cleanup = ()=>{
       subscribers.delete(fn);
       if(subscribers.size===0){
