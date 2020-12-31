@@ -3,7 +3,7 @@ export {schemaToReducerMap} from './schemaToReducerMap';
 export {pathSelectorToReactHook} from './pathSelectorToReactHook';
 // export {getSelectPath} from './getSelectPath';
 
-import {schemaToDepthFirstOperationMapper} from './schemaToQuerySelector';
+import {schemaToOperationMapper} from './schemaToOperationMapper';
 import {intersection,subtract,union} from './transducers';
 import {appendArrayReducer, appendObjectReducer, stubArray, stubObject} from '@a-laughlin/fp-utils';
 import gql from 'graphql-tag-bundled';
@@ -31,10 +31,10 @@ export const initGqdux = ({
 }={})=>{
   // maps redux state to another normalized redux state.
   // See "should denormalize item subsets with constants" in gqdux.test.js for the difference
-  const getNormalizedStateMapper = schemaToDepthFirstOperationMapper( schema, {intersection,subtract,union,...listTransducers},changeListItemCombiner,getChangeListItemAccumulator);
+  const getNormalizedStateMapper = schemaToOperationMapper( schema, {intersection,subtract,union,...listTransducers},changeListItemCombiner,getChangeListItemAccumulator);
   
   // maps redux state to a denormalized subset of the state for the chosen selections
-  const getDenormalizedStateMapper = schemaToDepthFirstOperationMapper( schema, {intersection,subtract,union,...listTransducers},queryListItemCombiner,getQueryListItemAccumulator);
+  const getDenormalizedStateMapper = schemaToOperationMapper( schema, {intersection,subtract,union,...listTransducers},queryListItemCombiner,getQueryListItemAccumulator);
   return {
     // rootReducer (mutation) case
     rootReducer:(prevState, action)=>{

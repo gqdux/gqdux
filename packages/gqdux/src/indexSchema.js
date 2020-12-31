@@ -99,5 +99,5 @@ export default memoize(schema=>{
   });
 
 
-  return result;
+  return result.selectionMeta;
 });

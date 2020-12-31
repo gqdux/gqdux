@@ -48,20 +48,19 @@ const getArgsPopulator = (vars)=>{
   };
 }
 
-const isChangeAST = ({definitions:[{selectionSet:{selections:[{selectionSet:s,arguments:a=[]}]}}]})=>s===undefined&&a.length;
-
-export const schemaToDepthFirstOperationMapper=(schema={},transducers={},getListItemCombiner,getListItemAccumulator)=>(
+export const schemaToOperationMapper=(schema={},transducers={},getListItemCombiner,getListItemAccumulator)=>(
   function operationToStateMapper(query={},passedVariables={}){
-    const queryMeta=indexSchema(schema).selectionMeta._query;
+    const queryMeta=indexSchema(schema)._query;
     const vars=variableDefinitionsToObject(query.definitions[0].variableDefinitions||[],passedVariables);
     const getArgs = getArgsPopulator(vars);
-    const isMutation=isChangeAST(query);
+    const {definitions:[{selectionSet:{selections:[{selectionSet:s,arguments:a=[]}]}}]}=query;
+    const isMutation=s===undefined&&a.length;
     
-    return getOperationLevelToStateLevelMapper(queryMeta,query.definitions[0]);
+    return operationLevelToStateLevelMapper(queryMeta,query.definitions[0]);
     
-    function getOperationLevelToStateLevelMapper(meta, selection, passedTransducer=identity){
-      const onQuery=meta.defName==='_query';
-      const sName=onQuery?'_query':selection.name.value;
+    // returns a tree of mapping functions that walk the state with the corresponding query and schema data.
+    function operationLevelToStateLevelMapper(meta, selection, passedTransducer=identity){
+      const sName=meta.defName==='_query'?'_query':selection.name.value;
       if(meta.fieldName!==sName) throw new Error(`fieldName ${meta.fieldName} must match s.name.value ${sName} `);
       
       // convert args to transducers
@@ -100,8 +99,8 @@ export const schemaToDepthFirstOperationMapper=(schema={},transducers={},getList
       const selectionObjs=transToObject((o,a)=>{o[a.name.value]=a})(selection.selectionSet?.selections??[]);
       // Walk the query tree beforehand to enclose the correct meta level for each childSelectors
       const selectionMappers=transToObject((o,m,k)=>{
-        if(k in selectionObjs) (o[k]=getOperationLevelToStateLevelMapper(m,selectionObjs[k],argTransducers[k]));
-        else if (isMutation) (o[k]=k in argTransducers?getOperationLevelToStateLevelMapper(m,{name:{value:k}},argTransducers[k]) : ([,vN])=>vN);
+        if(k in selectionObjs) (o[k]=operationLevelToStateLevelMapper(m,selectionObjs[k],argTransducers[k]));
+        else if (isMutation) (o[k]=k in argTransducers?operationLevelToStateLevelMapper(m,{name:{value:k}},argTransducers[k]) : ([,vN])=>vN);
       })(meta);
       if (meta.defKind==='object' && !isMutation && selection.selectionSet===undefined) return ()=>new Error(`objects must have selections`);
       const mapObject=childMappersToMapObject(selectionMappers);

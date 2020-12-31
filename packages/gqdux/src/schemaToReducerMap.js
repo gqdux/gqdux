@@ -20,7 +20,7 @@ const schemaToActionNormalizersByDefName = schema=>transToObject((acc,{defKind,i
     [stubTrue,payload=>new Error(`unrecognized payload type\n${JSON.stringify(payload,null,2)}`)]
   );
   acc[defName] = normalizePayload;
-})(indexSchema(schema).selectionMeta);
+})(indexSchema(schema));
 
 
 const schemaToOriginalCaseReducerMap = (schema,transducers={ADD,SUBTRACT,UNION,INTERSECTION,SET,GET})=>{
