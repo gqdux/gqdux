@@ -1,17 +1,17 @@
-import {createStore,combineReducers} from 'redux';
+import {createStore,combineReducers} from 'redux/es/redux.js';
 import {useState,useEffect}from 'react';
 import {
   schemaToReducerMap,
   schemaToMutationReducer,
   getSelectFullPath,
-  getSelectPath,
   pathSelectorToReactHook,
   initGqdux
 } from './gqdux';
+import {getSelectPath} from './getSelectPath';
 
 import { renderHook, act } from '@testing-library/react-hooks'
 import gql from 'graphql-tag-bundled';
-import { isObjectLike, mapToObject, over, pick, pipe, tdTap, transToObject } from '@a-laughlin/fp-utils';
+import { isObjectLike, transToObject } from '@a-laughlin/fp-utils';
 
 
 import { CustomConsole, LogType, LogMessage } from '@jest/console';
@@ -114,6 +114,7 @@ describe("schemaToReducerMap", () => {
     expect(result).not.toBe(state.Person);
   });
 });
+
 describe("initGqdux selector (query) case", () => {
   let schema,state,initSelector;
   beforeAll(()=>{
@@ -141,25 +142,7 @@ describe("initGqdux selector (query) case", () => {
   afterAll(()=>{
     schema=state=initSelector=null;
   });
-  // it.only("should traverse arguments",()=>{
-    
-  //   const query = gql(`{Person(foo:{}){id}}`);
-  //   const queryFn = querier(query);
-  //   const result1 = queryFn(state);
-  //   expect(result1).toEqual({Person:{a:{id:'a'}, b:{id:'b'}, c:{id:'c'}}});
-  // });
-  // it.only("should traverse more arguments than selections",()=>{
-  //   const query = gql(`{Person{id}}`);
-  //   const queryFn = querier(query);
-  //   const result1 = queryFn(state);
-  //   expect(result1).toEqual({Person:{a:{id:'a'}, b:{id:'b'}, c:{id:'c'}}});
-  // });
-  // it.only("should traverse more selections than arguments",()=>{
-  //   const query = gql(`{Person{id}}`);
-  //   const queryFn = querier(query);
-  //   const result1 = queryFn(state);
-  //   expect(result1).toEqual({Person:{a:{id:'a'}, b:{id:'b'}, c:{id:'c'}}});
-  // });
+
   it("should query collections",()=>{
     const query = gql(`{Person{id}}`);
     const queryFn = initSelector(query);
@@ -169,7 +152,14 @@ describe("initGqdux selector (query) case", () => {
   it(`should denormalize item subsets with constants Person(intersection:{id:"a"}){best{id}}`,()=>{
     const query = gql(`{Person(intersection:{id:"a"}){best{id}}}`);
     const result1=initSelector(query)(state);
-    expect(result1).toEqual({Person:{a:{best:{id:'b'}}}});
+    expect(result1).toEqual({
+      Person:{
+        a:{
+          // best:'a',normalized version
+          best:{id:'b'} //denormalized version
+        }
+      }
+    });
   });
   it("should denormalize item subsets with variables",()=>{
     const query = gql(`{Person(intersection:{id:$id}){best{id}}}`);
@@ -318,13 +308,17 @@ describe("getUseFullPath",()=>{
   });
   afterEach(()=>{
     cleanupSelectFullPath();
+    selectFullPath=null;
+    useQuery = null;
   });
   afterAll(()=>{
     store,useQuery,schema,selectFullPath,cleanupSelectFullPath,selectPersonProps,reducerMap=null;
   });
   
   test('should work on scalars', () => {
-    const { result } = renderHook(() =>useQuery(`{SomeScalar}`));
+    const { result } = renderHook(() =>{
+      return useQuery(`{SomeScalar}`);
+    });
     expect(result.current).toEqual({SomeScalar:1});
     const prevState = store.getState();
     act(()=>{store.dispatch({type:'SOMESCALAR_SET',payload:1})});
@@ -503,13 +497,16 @@ describe("useSelectPath",()=>{
 
 describe("initGqdux rootReducer (mutation) case",()=>{
   // integration test React.useState,redux.combineReducers(schemaReducerMap),schemaToQuerySelector(schema)
-  let store,useQuery,schema,dispatchMutation,selectFullPath,cleanupSelectFullPath,initReducer,state,selectPersonProps;
-  schema = gql`
-    type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
-    type Pet{id:ID,name:String}
-    scalar SomeScalar
-  `;
-  ({initReducer} = initGqdux({schema}));
+  let store,useQuery,schema,initDispatch,dispatchMutation,selectFullPath,cleanupSelectFullPath,rootReducer,state,selectPersonProps;
+
+  beforeAll(()=>{
+    schema = gql`
+      type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
+      type Pet{id:ID,name:String}
+      scalar SomeScalar
+    `;
+    ({rootReducer,initDispatch} = initGqdux({schema}));
+  });
 
   beforeEach(()=>{
     state={
@@ -525,19 +522,18 @@ describe("initGqdux rootReducer (mutation) case",()=>{
       },
     }
     selectPersonProps=(...lists)=>({Person:selectNestedProps(state.Person)(...lists)});
-    store = createStore(initReducer,state);
-    dispatchMutation=(query,vars)=>{
-      store.dispatch({type:'mutation',payload:[gql`{${query}}`,vars]});
-    };
+    store = createStore(rootReducer,state);
     ({selectFullPath,cleanupSelectFullPath}=getSelectFullPath(schema,gql,store));
+    dispatchMutation=initDispatch(store)
     useQuery = pathSelectorToReactHook(selectFullPath,store,useState,useEffect);
   });
 
   afterEach(()=>{
-    cleanupSelectFullPath()
+    cleanupSelectFullPath();
+    dispatchMutation=null;
   })
   afterAll(()=>{
-    schema=state=store=useQuery=dispatchMutation=cleanupSelectFullPath=selectFullPath=initReducer=selectPersonProps=undefined;
+    schema=state=store=useQuery=initDispatch=dispatchMutation=cleanupSelectFullPath=selectFullPath=rootReducer=selectPersonProps=undefined;
   });
   
   

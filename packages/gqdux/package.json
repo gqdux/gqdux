@@ -11,16 +11,13 @@
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {
-    "@a-laughlin/fp-utils": "^0.0.29"
-  },
   "devDependencies": {
+    "graphql-tag-bundled": "^0.0.10",
+    "@a-laughlin/fp-utils": "^0.0.30",
     "@testing-library/react-hooks": "^3.3.0",
-    "graphql": "^15.3.0",
-    "graphql-tag": "^2.10.4",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-test-renderer": "^16.13.1",
+    "react": "^17",
+    "react-dom": "^17",
+    "react-test-renderer": "^17",
     "redux": "^4.0.5"
   },
   "gitHead": "57f810435642e947a90f07c98b91f0ee8bdb1318"

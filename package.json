@@ -37,13 +37,13 @@
   "scripts": {
     "build": "rm -rf ./packages/*/dist/*; rollup -c rollup.config.js",
     "test:clearcache": "jest --clear-cache",
-    "test:nowatch": "jest --no-cache --no-watch ./packages/**/src/*.test.js",
-    "test:watch": "jest --watch ./packages/**/src/*.test.js",
+    "test:nowatch": "jest --no-watch ./packages/*/src/*.test.js",
+    "//test:nowatch": "jest --no-cache --no-watch ./packages/*/src/*.test.js",
+    "test": "jest --watch ./packages/*/src/*.test.js",
     "//test:exp:nowatch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --no-cache --no-watch ./packages/**/src/*.test.js",
     "//test:exp:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --no-cache --watch ./packages/**/src/*.test.js",
     "// test:debug requires going to chrome://inspect and opening chrome devtools for node": "",
     "// can also just use node debug in vscode with f5": "",
-    "test:debug": "node --inspect node_modules/.bin/jest --watch --runInBand/./packages/**/src/*.test.js",
-    "test": "jest --watch ./packages/**/src/*.test.js"
+    "test:debug": "node --inspect node_modules/.bin/jest --watch --runInBand/./packages/**/src/*.test.js"
   }
 }

@@ -1,6 +1,6 @@
 import {memoize} from '@a-laughlin/fp-utils';
-import {initGqdux} from './gqdux';
-const getStoreScanner = memoize(store=>{
+
+export const getStoreScanner = memoize(store=>{
   let lastState,curState,unsubscribeStore,subscribers;
   return fn=>{
     if(subscribers===undefined){
@@ -25,14 +25,3 @@ const getStoreScanner = memoize(store=>{
     return result;
   };
 });
-
-export const getSelectFullPath = (schema,gql,store)=>{
-  let {initSelector}=initGqdux({schema});
-  const {withPrevState:selectFullPath,cleanup}=getStoreScanner(store)((lastState,curState,str,variables={},lastResult)=>{
-    return (initSelector(gql(str),variables)(curState,lastState,lastResult));
-  });
-  return {
-    cleanupSelectFullPath:()=>{initSelector=null;cleanup();},
-    selectFullPath
-  };
-};

@@ -99,10 +99,8 @@ const modules = readdirSync('packages')
       
       const globalArgs={
         name:snakeToStartCase(dir),
-        globals:{
+        globals:{// for umd build, defines the global names
           react:'react',
-          '@a-laughlin/fp-utils':'fpUtils',
-          'graphql-tag':'gql',
           'graphql-tag-bundled':'gql',
         }
       };
@@ -114,8 +112,7 @@ const modules = readdirSync('packages')
   plugins:[
     alias({entries: [
       // rollup is unaware of yarn workspaces, so alias input paths when building
-      { find: '@a-laughlin/fp-utils', replacement: 'packages/fp-utils/src/fp-utils.js' },
-      { find: '@a-laughlin/style-string-to-object', replacement: 'packages/style-string-to-object/src/style-string-to-object.js' },
+      // { find: '@a-laughlin/fp-utils', replacement: 'packages/fp-utils/src/fp-utils.js' },
       // { find: 'react', replacement: 'https://unpkg.com/react@16/umd/react.development.js' },
     ]}),
     resolvePlugin,
