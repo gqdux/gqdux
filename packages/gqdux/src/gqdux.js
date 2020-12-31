@@ -8,19 +8,20 @@ import {getStoreScanner} from './getStoreScanner';
 export const initGqdux = ({
   schema,
   listTransducers={},
-  queryListItemCombiner=({nodeType})=>nodeType==='objectScalarList'?appendArrayReducer:appendObjectReducer,
+  getQueryListItemCombiner=({nodeType})=>nodeType==='objectScalarList'?appendArrayReducer:appendObjectReducer,
   getQueryListItemAccumulator=({nodeType})=>nodeType==='objectScalarList'?stubArray:stubObject,
-  changeListItemCombiner=({nodeType})=>nodeType==='objectScalarList'||nodeType==='objectIdList'?appendArrayReducer:appendObjectReducer,
+  getChangeListItemCombiner=({nodeType})=>nodeType==='objectScalarList'||nodeType==='objectIdList'?appendArrayReducer:appendObjectReducer,
   getChangeListItemAccumulator=({nodeType})=>nodeType==='objectScalarList'||nodeType==='objectIdList'?stubArray:stubObject,
 }={})=>{
+  const transducers={intersection,subtract,union,...listTransducers}
   // maps redux state to another normalized redux state.
   // See "should denormalize item subsets with constants" in gqdux.test.js for the difference
-  const getNormalizedStateMapper = schemaToOperationMapper( schema, {intersection,subtract,union,...listTransducers},changeListItemCombiner,getChangeListItemAccumulator);
-  
+  const getNormalizedStateMapper = schemaToOperationMapper( schema, transducers, getChangeListItemCombiner, getChangeListItemAccumulator);
   // maps redux state to a denormalized subset of the state for the chosen selections
-  const getDenormalizedStateMapper = schemaToOperationMapper( schema, {intersection,subtract,union,...listTransducers},queryListItemCombiner,getQueryListItemAccumulator);
+  const getDenormalizedStateMapper = schemaToOperationMapper( schema, transducers, getQueryListItemCombiner, getQueryListItemAccumulator);
+  
   const api = {
-    // rootReducer (mutation) case
+    // rootReducer to process mutations
     rootReducer:(prevState, action)=>{
       const {type='mutation',payload:[query={},variables={}]=[]} = action;
       return (type!=='mutation')
@@ -33,7 +34,7 @@ export const initGqdux = ({
           prevState,// necessary for idList lookups
         ]);
       },
-    // selector (query)
+    // selector to query the store
     getSelector:store=>{
       const storeScanner=getStoreScanner(store);
       const {withPrevState:selector,cleanup}=storeScanner(
@@ -51,6 +52,7 @@ export const initGqdux = ({
       selector.cleanup=()=>{cleanup();delete selector.cleanup;};
       return selector;
     },
+    // dispatch mutations
     getDispatch:store=>(query,variables={})=>{
       store.dispatch({type:'mutation',payload:[gql`{${query}}`,variables]});
     },

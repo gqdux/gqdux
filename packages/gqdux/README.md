@@ -65,6 +65,7 @@ const selectFullPath = {useSelectPath}=
 // change
 Collection                  gqdux`Person(intersection:{id:"a"})`
 Prop                        gqdux`Person(friends:{intersect:{id:"b"}})`
+// These two don't work yet (to select a subset, then modify it)
 Collection+Prop             gqdux`Person(intersection:{id:"a"},friends:{intersect:{id:"a"}})`
 Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"a"}})`
 
