@@ -49,10 +49,8 @@ const getArgsPopulator = (vars)=>{
 }
 
 export const schemaToOperationMapper=(schema={},transducers={},getListItemCombiner,getListItemAccumulator)=>(
-  function operationToStateMapper(query={},passedVariables={}){
-    const {definitions:[{variableDefinitions=[],selectionSet:{selections:[{selectionSet,arguments:a=[]}]}}]}=query;
-    const isMutation=selectionSet===undefined&&a.length;
-    const vars=variableDefinitionsToObject(variableDefinitions,passedVariables);
+  function operationToStateMapper(query={},passedVariables={},isMutation=false){
+    const vars=variableDefinitionsToObject(query.definitions[0].variableDefinitions||[],passedVariables);
     const getArgs = getArgsPopulator(vars);
     
     // returns a tree of mapping functions that walk the state with the corresponding query and schema data.

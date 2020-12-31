@@ -1,7 +1,7 @@
 
 import {appendArrayReducer, appendObjectReducer, stubArray, stubObject} from '@a-laughlin/fp-utils';
 import gql from 'graphql-tag-bundled';
-import {schemaToOperationMapper} from './schemaToOperationMapper';
+import {schemaToOperationMapper,isQueryMutation} from './schemaToOperationMapper';
 import {intersection,subtract,union} from './transducers';
 import {getStoreScanner} from './getStoreScanner';
 
@@ -26,7 +26,7 @@ export const initGqdux = ({
       const {type='mutation',payload:[query={},variables={}]=[]} = action;
       return (type!=='mutation')
         ? prevState
-        : getNormalizedStateMapper(query,variables)([
+        : getNormalizedStateMapper(query,variables,true)([
           prevState,
           prevState,
           prevState,
@@ -34,13 +34,19 @@ export const initGqdux = ({
           prevState,// necessary for idList lookups
         ]);
       },
-    // selector to query the store
-    getSelector:store=>{
+    // returns single parametric polymorphic fn that infers selection vs dispatch based on query AST shape.
+    getGqdux:store=>{
       const storeScanner=getStoreScanner(store);
       const {withPrevState:selector,cleanup}=storeScanner(
         (rootNorm={},rootNormPrev={},query,variables={},rootDenormPrev={})=>{
           query=typeof query==='string'?gql(`{${query}}`):query;
-          return getDenormalizedStateMapper(query,variables)([
+          const {definitions:[{selectionSet:{selections:[{selectionSet:s,arguments:a=[]}]}}]} = query;
+          const isMutation = s===undefined&&a.length;
+          if(isMutation) {
+            store.dispatch({type:'mutation',payload:[query,variables]});
+            return;
+          }
+          return getDenormalizedStateMapper(query,variables,false)([
             rootDenormPrev,
             rootNorm,
             rootNormPrev,
@@ -52,19 +58,15 @@ export const initGqdux = ({
       selector.cleanup=()=>{cleanup();delete selector.cleanup;};
       return selector;
     },
-    // dispatch mutations
-    getDispatch:store=>(query,variables={})=>{
-      store.dispatch({type:'mutation',payload:[gql`{${query}}`,variables]});
-    },
-    getSelectorHook:(store,useState,useEffect,pathSelector=api.getSelector(store))=>{
+    getSelectorHook:(store,useState,useEffect,selector=api.getGqdux(store))=>{
       function useQuery (query,variables={}){
-        const [denormedState,setState] = useState(pathSelector(query,variables));
+        const [denormedState,setState] = useState(selector(query,variables));
         useEffect(()=>store.subscribe(()=> { // returns the unsubscribe function
-          setState(prevDenormed=>pathSelector(query,variables,prevDenormed));
+          setState(prevDenormed=>selector(query,variables,prevDenormed));
         }),[]);
         return denormedState;
       };
-      useQuery.cleanup=()=>{pathSelector.cleanup();delete useQuery.cleanup;}
+      useQuery.cleanup=()=>{selector.cleanup();delete useQuery.cleanup;}
       return useQuery;
     }
   };

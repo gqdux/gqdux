@@ -58,19 +58,20 @@ const initialState = {
   }
 };
 
+const {getGqdux,rootReducer}=initGqdux({schema});
+const reduxStore=createStore(rootReducer,initialState);
+const gqdux=getGqdux(reduxStore);
 
-const gqdux = initGqdux({schema,store:createStore(initGqdux({schema}),initialState)});
-const selectFullPath = {useSelectPath}=
+// query aka selector
+Collection                  gqdux`Person(intersect:{id:"a"}){id,friends{id}}`
 
-// change
+// mutation aka dispatch
 Collection                  gqdux`Person(intersection:{id:"a"})`
 Prop                        gqdux`Person(friends:{intersect:{id:"b"}})`
 // These two don't work yet (to select a subset, then modify it)
 Collection+Prop             gqdux`Person(intersection:{id:"a"},friends:{intersect:{id:"b"}})`
 Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"b"}})`
 
-// query
-Collection                  gqdux`Person(intersect:{id:"a"}){id,friends{id}}`
 ```
 
 Try it [on codepen](link)
