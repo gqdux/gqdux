@@ -90,29 +90,11 @@ Try it [on codepen](link)
 ```js
 
 
-const schema=`
-  type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
-  type Pet{id:ID,name:String}
-  scalar SomeScalar
-`;
+export const intersection=(meta,args)=>next=>obj=>polymorphicListItemTest(meta,args)(obj) && next(obj));
 
-// indexSchema.js: indexSchema(schema)-> queryMeta (recursive schema references)
+export const intersection=(meta,args) => next => obj => not(polymorphicListItemTest(meta,args))(obj) && next(obj));
 
-const initialState = {
-  SomeScalar:1,
-  Person:{
-    a:{id:'a',name:'A',best:'b',otherbest:'c',nicknames:["AA","AAA"],friends:['b','c'],pet:'x'},
-    b:{id:'b',name:'B',best:'a',friends:['a'],nicknames:["BB","BBB"]},
-    c:{id:'c',name:'C',best:'b',friends:['b'],nicknames:[]},
-  },
-  Pet:{
-    x:{id:'x',name:'X'},
-    y:{id:'y',name:'Y'},
-  },
-};
-
-
-// schemaToQuerySelector(schema)-> selectionMeta (recursive schema references)
+export const union=(args={},meta) => next => obj => {...more complex...};
 ```
 
 
