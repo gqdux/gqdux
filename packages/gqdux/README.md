@@ -45,9 +45,15 @@ import {createStore} from 'redux';
 import {initGqdux} from 'gqdux';
 
 const schema=`
-  type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
-  type Pet{id:ID,name:String}
-  scalar SomeScalar
+type Person{
+  id:ID,
+  name:String,
+  best:Person,
+  otherbest:Person,
+  nicknames:[String],
+  friends:[Person],
+  pet:Pet
+}
 `;
 
 const initialState = {
@@ -62,13 +68,16 @@ const {getGqdux,rootReducer}=initGqdux({schema});
 const reduxStore=createStore(rootReducer,initialState);
 const gqdux=getGqdux(reduxStore);
 
-// query aka selector
-Collection                  gqdux`Person(intersect:{id:"a"}){id,friends{id}}`
+// query
+gqdux`Person(intersect:{id:"a"}){id,friends{id}}` -> {a:{id:'a',friends:{b:{id:'b'},c:{id:'c'}}}}
 
-// mutation aka dispatch
-Collection                  gqdux`Person(intersection:{id:"a"})`
-Prop                        gqdux`Person(friends:{intersect:{id:"b"}})`
-// These two don't work yet (to select a subset, then modify it)
+// collection mutation
+gqdux`Person(intersection:{id:"a"}` -> no data returned, but queries for Person get {...a}, (Person.b & Person.c removed)
+
+// prop mutation
+gqdux(`Person(intersection:{id:"a"},nicknames:{union:["AAAA"]})`) -> no data returned. Queries with Person.a get {...nicknames:["AA","AAA","AAAA"]}
+
+// In-Progress (to select a subset, then modify it)
 Collection+Prop             gqdux`Person(intersection:{id:"a"},friends:{intersect:{id:"b"}})`
 Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"b"}})`
 
@@ -79,6 +88,7 @@ Try it [on codepen](link)
 ## Authoring Transducers
 
 ```js
+
 
 const schema=`
   type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
@@ -110,29 +120,15 @@ const initialState = {
 
 ## API
 
-
-`gqdux('Person{id}',{...variables...})` equivalents: redux selector, graphql query
-`selectFullPath('graphql string',{...variables...})` equivalents: redux selector, graphql query 
-`change('graphql string',{...variables...})` equivalents: redux selector, graphql query 
-`selectorToReactHook`
-
 ## GQL Syntax (intentionally a subset)
 
 // Graphql isn't designed as a data query language, but an API query language.  Attempts at making it one get [complicated](https://hasura.io/docs/1.0/graphql/manual/queries/query-filters.html#fetch-if-the-single-nested-object-defined-via-an-object-relationship-satisfies-a-condition).
-In the #pitofsuccess spirit, I provide a few standard terms
-I don't know the best solution for this (it likely varies), but I do know having something simple and robust enough to cover many cases is helpful to get started.  To avoid semantic dependencies (that rely on developer past experience graphs), I'm going with standard set operations: Union, intersection, and Subtraction (Difference).
-
-### Operations (3)
-
-Standard set operations for simplicity and to minimize mismatch between author and user linguistic/experiential dependency graphs
-
-- intersect
-- union
-- subtract
+To avoid semantic dependencies (that rely on developer past experience graphs), gqdux starts with standard set operations: Union, Intersect, and Subtract. (Difference).
 
 ## Testing
 
-Testing all the permutations of a component is both verbose and error prone.
+Testing all the combinations of a component is verbose and error prone.
+Defining boundary values in the schema enables automatically testing each component using combinations of the values it queries for.
 Gqdux leverages the graphql schema to enable testing all permutations of boundary values automatically.
 
 TODO get this test working
@@ -142,7 +138,6 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import gql from 'graphql-tag-bundled';
 
-import {schemaToRootReducer,getSelectPath,mapBoundaryValueCombinations} from 'gqdux';
 import {createStore} from 'redux';
 import {useState,useEffect} from 'react';
 
