@@ -1,7 +1,7 @@
 {
-  "bundleSize": 108791,
+  "bundleSize": 109287,
   "bundleOrigSize": 112434,
-  "bundleReduction": 3.24,
+  "bundleReduction": 2.8,
   "modules": [
     {
       "id": "/packages/gqdux/node_modules/graphql-tag-bundled/es/graphql-tag-bundled.js",
@@ -14,12 +14,12 @@
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 83.98,
+      "percent": 83.6,
       "reduction": 0.02
     },
     {
       "id": "/packages/gqdux/src/schemaToOperationMapper.js",
-      "size": 6653,
+      "size": 6787,
       "origSize": 6797,
       "renderedExports": [
         "schemaToOperationMapper"
@@ -28,12 +28,12 @@
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 6.12,
-      "reduction": 2.12
+      "percent": 6.21,
+      "reduction": 0.15
     },
     {
       "id": "/packages/gqdux/src/indexSchema.js",
-      "size": 4950,
+      "size": 5182,
       "origSize": 5254,
       "renderedExports": [
         "getDefName",
@@ -48,24 +48,24 @@
       "dependents": [
         "/packages/gqdux/src/schemaToOperationMapper.js"
       ],
-      "percent": 4.55,
-      "reduction": 5.79
+      "percent": 4.74,
+      "reduction": 1.37
     },
     {
       "id": "/packages/gqdux/src/gqdux.js",
-      "size": 3179,
+      "size": 3243,
       "origSize": 3520,
       "renderedExports": [
         "initGqdux"
       ],
       "removedExports": [],
       "dependents": [],
-      "percent": 2.92,
-      "reduction": 9.69
+      "percent": 2.97,
+      "reduction": 7.87
     },
     {
       "id": "/packages/gqdux/src/transducers.js",
-      "size": 1623,
+      "size": 1681,
       "origSize": 4405,
       "renderedExports": [
         "intersection",
@@ -86,12 +86,12 @@
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 1.49,
-      "reduction": 63.16
+      "percent": 1.54,
+      "reduction": 61.84
     },
     {
       "id": "/packages/gqdux/src/getStoreScanner.js",
-      "size": 693,
+      "size": 701,
       "origSize": 747,
       "renderedExports": [
         "getStoreScanner"
@@ -101,7 +101,7 @@
         "/packages/gqdux/src/gqdux.js"
       ],
       "percent": 0.64,
-      "reduction": 7.23
+      "reduction": 6.16
     },
     {
       "id": "\u0000rollup-plugin-inject-process-env",
@@ -117,7 +117,7 @@
         "/packages/gqdux/src/getStoreScanner.js",
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 0.31,
+      "percent": 0.3,
       "reduction": 0
     }
   ],
