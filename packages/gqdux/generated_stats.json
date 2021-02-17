@@ -1,7 +1,7 @@
 {
-  "bundleSize": 115330,
-  "bundleOrigSize": 133835,
-  "bundleReduction": 13.83,
+  "bundleSize": 115403,
+  "bundleOrigSize": 133934,
+  "bundleReduction": 13.84,
   "modules": [
     {
       "id": "/packages/gqdux/node_modules/graphql-tag-bundled/es/graphql-tag-bundled.js",
@@ -14,7 +14,7 @@
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 79.22,
+      "percent": 79.17,
       "reduction": 0.02
     },
     {
@@ -28,7 +28,7 @@
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 5.77,
+      "percent": 5.76,
       "reduction": 2.15
     },
     {
@@ -170,7 +170,7 @@
         "/packages/gqdux/src/getStoreScanner.js",
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 5.65,
+      "percent": 5.64,
       "reduction": 69.56
     },
     {
@@ -195,15 +195,15 @@
     },
     {
       "id": "/packages/gqdux/src/gqdux.js",
-      "size": 3204,
-      "origSize": 3520,
+      "size": 3277,
+      "origSize": 3619,
       "renderedExports": [
         "initGqdux"
       ],
       "removedExports": [],
       "dependents": [],
-      "percent": 2.78,
-      "reduction": 8.98
+      "percent": 2.84,
+      "reduction": 9.45
     },
     {
       "id": "/packages/gqdux/src/transducers.js",
@@ -228,7 +228,7 @@
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 1.41,
+      "percent": 1.4,
       "reduction": 63.2
     },
     {
