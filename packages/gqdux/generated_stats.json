@@ -1,11 +1,11 @@
 {
-  "bundleSize": 109287,
-  "bundleOrigSize": 112434,
-  "bundleReduction": 2.8,
+  "bundleSize": 115330,
+  "bundleOrigSize": 133835,
+  "bundleReduction": 13.83,
   "modules": [
     {
       "id": "/packages/gqdux/node_modules/graphql-tag-bundled/es/graphql-tag-bundled.js",
-      "size": 91360,
+      "size": 91364,
       "origSize": 91379,
       "renderedExports": [
         "default"
@@ -14,12 +14,12 @@
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 83.6,
+      "percent": 79.22,
       "reduction": 0.02
     },
     {
       "id": "/packages/gqdux/src/schemaToOperationMapper.js",
-      "size": 6787,
+      "size": 6651,
       "origSize": 6797,
       "renderedExports": [
         "schemaToOperationMapper"
@@ -28,12 +28,154 @@
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 6.21,
-      "reduction": 0.15
+      "percent": 5.77,
+      "reduction": 2.15
+    },
+    {
+      "id": "/node_modules/@a-laughlin/fp-utils/es/fp-utils.js",
+      "size": 6514,
+      "origSize": 21401,
+      "renderedExports": [
+        "appendArrayReducer",
+        "appendObjectReducer",
+        "assignEnumAndNonEnumProps",
+        "compose",
+        "ensureArray",
+        "ensureProp",
+        "ensurePropIsObject",
+        "ensurePropWith",
+        "identity",
+        "ifElse",
+        "isArray",
+        "isObjectLike",
+        "isString",
+        "keyBy",
+        "memoize",
+        "not",
+        "setImmutableNonEnumProp",
+        "stubArray",
+        "stubObject",
+        "stubTrue",
+        "tdFilter",
+        "tdMap",
+        "tdOmit",
+        "transArrayToObject",
+        "transObjectToObject",
+        "transToObject"
+      ],
+      "removedExports": [
+        "_is",
+        "and",
+        "cond",
+        "condNoExec",
+        "constant",
+        "curry",
+        "diffBy",
+        "diffObjs",
+        "dpipe",
+        "ensureFunction",
+        "ensurePropIsArray",
+        "ensureString",
+        "filterMapToArray",
+        "filterMapToObject",
+        "filterMapToSame",
+        "filterToArray",
+        "filterToObject",
+        "filterToSame",
+        "first",
+        "groupBy",
+        "groupByKeys",
+        "groupByValues",
+        "has",
+        "hasKey",
+        "immutableFilterObjectToObject",
+        "immutableTransArrayToArray",
+        "immutableTransObjectToObject",
+        "indexBy",
+        "is",
+        "isError",
+        "isFinite",
+        "isFunction",
+        "isInteger",
+        "isLength",
+        "isProductionEnv",
+        "isPromise",
+        "isUndefOrNull",
+        "last",
+        "mapToArray",
+        "mapToObject",
+        "mapToSame",
+        "matches",
+        "matchesProperty",
+        "none",
+        "noop",
+        "omitToArray",
+        "omitToObject",
+        "omitToSame",
+        "once",
+        "or",
+        "over",
+        "overArray",
+        "overObj",
+        "partition",
+        "pget",
+        "pick",
+        "pipe",
+        "plog",
+        "range",
+        "reduce",
+        "setNonEnumProp",
+        "sortedRangeIsSubsetOrEqual",
+        "sortedRangeIsSubsetStrict",
+        "sortedRangesIntersect",
+        "stubFalse",
+        "stubNull",
+        "stubString",
+        "tdAssign",
+        "tdDPipeToArray",
+        "tdDPipeToObject",
+        "tdFilterWithAcc",
+        "tdIdentity",
+        "tdIfElse",
+        "tdKeyBy",
+        "tdLog",
+        "tdMapKey",
+        "tdMapKeyWithAcc",
+        "tdMapWithAcc",
+        "tdOmitWithAcc",
+        "tdPipeToArray",
+        "tdPipeToObject",
+        "tdReduce",
+        "tdReduceListValue",
+        "tdSet",
+        "tdTap",
+        "tdToArray",
+        "tdToObject",
+        "tdToSame",
+        "toPredicate",
+        "transArrayToArray",
+        "transObjectToArray",
+        "transToArray",
+        "transToSame",
+        "transduce",
+        "transduceBF",
+        "transduceDF",
+        "uniqueId",
+        "xor"
+      ],
+      "dependents": [
+        "/packages/gqdux/src/indexSchema.js",
+        "/packages/gqdux/src/schemaToOperationMapper.js",
+        "/packages/gqdux/src/transducers.js",
+        "/packages/gqdux/src/getStoreScanner.js",
+        "/packages/gqdux/src/gqdux.js"
+      ],
+      "percent": 5.65,
+      "reduction": 69.56
     },
     {
       "id": "/packages/gqdux/src/indexSchema.js",
-      "size": 5182,
+      "size": 4950,
       "origSize": 5254,
       "renderedExports": [
         "getDefName",
@@ -48,24 +190,24 @@
       "dependents": [
         "/packages/gqdux/src/schemaToOperationMapper.js"
       ],
-      "percent": 4.74,
-      "reduction": 1.37
+      "percent": 4.29,
+      "reduction": 5.79
     },
     {
       "id": "/packages/gqdux/src/gqdux.js",
-      "size": 3243,
+      "size": 3204,
       "origSize": 3520,
       "renderedExports": [
         "initGqdux"
       ],
       "removedExports": [],
       "dependents": [],
-      "percent": 2.97,
-      "reduction": 7.87
+      "percent": 2.78,
+      "reduction": 8.98
     },
     {
       "id": "/packages/gqdux/src/transducers.js",
-      "size": 1681,
+      "size": 1621,
       "origSize": 4405,
       "renderedExports": [
         "intersection",
@@ -86,12 +228,12 @@
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 1.54,
-      "reduction": 61.84
+      "percent": 1.41,
+      "reduction": 63.2
     },
     {
       "id": "/packages/gqdux/src/getStoreScanner.js",
-      "size": 701,
+      "size": 693,
       "origSize": 747,
       "renderedExports": [
         "getStoreScanner"
@@ -100,8 +242,8 @@
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 0.64,
-      "reduction": 6.16
+      "percent": 0.6,
+      "reduction": 7.23
     },
     {
       "id": "\u0000rollup-plugin-inject-process-env",
@@ -110,6 +252,7 @@
       "renderedExports": [],
       "removedExports": [],
       "dependents": [
+        "/node_modules/@a-laughlin/fp-utils/es/fp-utils.js",
         "/packages/gqdux/node_modules/graphql-tag-bundled/es/graphql-tag-bundled.js",
         "/packages/gqdux/src/indexSchema.js",
         "/packages/gqdux/src/schemaToOperationMapper.js",
@@ -117,9 +260,9 @@
         "/packages/gqdux/src/getStoreScanner.js",
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 0.3,
+      "percent": 0.29,
       "reduction": 0
     }
   ],
-  "moduleCount": 7
+  "moduleCount": 8
 }
