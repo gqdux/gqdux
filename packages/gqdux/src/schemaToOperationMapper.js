@@ -22,13 +22,14 @@ const tdMapVnorm = (listItemTransducer,getListItemAccumulator,listItemCombiner)=
   return changed?v:vP;
 }
 
-const childMappersToMapObject = (selectionMappers)=>{
+const childMappersToMapObject = (operationLevelMappers)=>{
   return function mapObject(arr,k){
     let [vP={},vN={},vNP={},rN,rNP]=arr;
     let v={},ck,changed=vN!==vNP;
-    // v check is necessary since an adjacent collection may have changed
-    for (ck in selectionMappers) {
-      ck in vN && (v[ck]=selectionMappers[ck]([vP[ck],vN[ck],vNP[ck],rN,rNP],ck));
+    for (ck in operationLevelMappers) {
+      // ck in vN ignores missing properties
+      ck in vN && (v[ck]=operationLevelMappers[ck]([vP[ck],vN[ck],vNP[ck],rN,rNP],ck));
+      // equality check is necessary since a traversed collection item may have changed, even if the normed id didn't change
       if(v[ck] !== vP[ck]) changed=true;
     }
     return changed?v:vP;
@@ -58,9 +59,6 @@ export const schemaToOperationMapper=(schema={},transducers={},getListItemCombin
       const sName=meta.defName==='_query'?'_query':selection.name.value;
       if(meta.fieldName!==sName) throw new Error(`fieldName ${meta.fieldName} must match s.name.value ${sName} `);
       
-      // convert args to transducers
-      // Person{intersect:{friends:{id:"a"}}} loop over friends, but apply result to Person
-      // Person{friends:{intersect:{id:"a"}}} loop over friends, applying result to friends
       const argTransducers={};
       const composeTransducer=(name,td)=>argTransducers[name]=argTransducers[name]?compose(argTransducers[name],td):td;
       for (const arg of selection.arguments??[]){
@@ -86,20 +84,15 @@ export const schemaToOperationMapper=(schema={},transducers={},getListItemCombin
         });
         else throw new Error(`field kind "${kind}" not supported yet"`);
       }
-      // args forest, selections forest, query tree, state tree,
-      // different ways to combine them
-      // - pass siblingReducer to previous
-      // - hard-code filter on non-transducer props
-      // - compose them somehow... difficult since props transducers are recursed, and prev ones mean the need to split/apply/combine the rest of the pipe.
       
       const selectionObjs=transToObject((o,a)=>{o[a.name.value]=a})(selection.selectionSet?.selections??[]);
       // Walk the query tree beforehand to enclose the correct meta level for each childSelectors
-      const selectionMappers=transToObject((o,m,k)=>{
+      const operationLevelMappers=transToObject((o,m,k)=>{
         if(k in selectionObjs) (o[k]=operationLevelToStateLevelMapper(m,selectionObjs[k],argTransducers[k]));
         else if (isMutation) (o[k]=k in argTransducers?operationLevelToStateLevelMapper(m,{name:{value:k}},argTransducers[k]) : ([,vN])=>vN);
       })(meta);
       if (meta.defKind==='object' && !isMutation && selection.selectionSet===undefined) return ()=>new Error(`objects must have selections`);
-      const mapObject=childMappersToMapObject(selectionMappers);
+      const mapObject=childMappersToMapObject(operationLevelMappers);
       if (meta.nodeType==='objectScalar')            return ([,vN])=>vN;
       if (meta.nodeType==='object')                  return mapObject
       if (meta.nodeType==='objectId')                return isMutation

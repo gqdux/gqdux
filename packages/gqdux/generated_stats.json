@@ -1,184 +1,40 @@
 {
-  "bundleSize": 21317,
-  "bundleOrigSize": 34626,
-  "bundleReduction": 38.44,
+  "bundleSize": 108791,
+  "bundleOrigSize": 112434,
+  "bundleReduction": 3.24,
   "modules": [
     {
-      "id": "packages/fp-utils/src/fp-utils.js",
-      "size": 7648,
-      "origSize": 19789,
+      "id": "/packages/gqdux/node_modules/graphql-tag-bundled/es/graphql-tag-bundled.js",
+      "size": 91360,
+      "origSize": 91379,
       "renderedExports": [
-        "identity",
-        "compose",
-        "stubObject",
-        "stubTrue",
-        "stubFalse",
-        "isFinite",
-        "isInteger",
-        "isString",
-        "isFunction",
-        "isObjectLike",
-        "isArray",
-        "toPredicate",
-        "ensureArray",
-        "ensureString",
-        "ensureProp",
-        "ensurePropWith",
-        "ensurePropIsObject",
-        "not",
-        "ifElseUnary",
-        "ifElse",
-        "and",
-        "or",
-        "hasKey",
-        "matchesProperty",
-        "matches",
-        "none",
-        "cond",
-        "transArrayToObject",
-        "transArrayToArray",
-        "transObjectToObject",
-        "transObjectToArray",
-        "transToObject",
-        "transToArray",
-        "mapToArray",
-        "mapToObject",
-        "len",
-        "len0",
-        "len1",
-        "keyBy",
-        "groupByKeys",
-        "groupByValues",
-        "memoize",
-        "diffObjs",
-        "diffBy"
-      ],
-      "removedExports": [
-        "curry",
-        "pipe",
-        "stubNull",
-        "stubArray",
-        "stubString",
-        "noop",
-        "range",
-        "isError",
-        "is",
-        "isUndefOrNull",
-        "isProductionEnv",
-        "isPromise",
-        "plog",
-        "dpipe",
-        "invokeArgsOnObj",
-        "invokeObjectWithArgs",
-        "overObj",
-        "overArray",
-        "over",
-        "converge",
-        "constant",
-        "ensureFunction",
-        "ensurePropIsArray",
-        "xor",
-        "_is",
-        "condNoExec",
-        "immutableTransObjectToObject",
-        "immutableTransArrayToArray",
-        "immutableFilterObjectToObject",
-        "ro",
-        "ra",
-        "transToSame",
-        "rx",
-        "filterToArray",
-        "fa",
-        "filterToObject",
-        "fo",
-        "filterToSame",
-        "fx",
-        "omitToArray",
-        "oa",
-        "omitToObject",
-        "oo",
-        "omitToSame",
-        "ox",
-        "ma",
-        "mo",
-        "mapToSame",
-        "mx",
-        "filterMapToArray",
-        "fma",
-        "filterMapToObject",
-        "fmo",
-        "filterMapToSame",
-        "fmx",
-        "first",
-        "last",
-        "partition",
-        "has",
-        "isDeepEqual",
-        "groupBy",
-        "pget",
-        "pick",
-        "objStringifierFactory",
-        "objToUrlParams",
-        "uniqueId",
-        "transduce",
-        "appendArrayReducer",
-        "appendObjectReducer",
-        "tdToArray",
-        "tdToObject",
-        "tdToSame",
-        "tdMap",
-        "tdMapKey",
-        "tdMapWithAcc",
-        "tdMapKeyWithAcc",
-        "tdAssign",
-        "tdSet",
-        "tdReduce",
-        "tdIdentity",
-        "tdTap",
-        "tdLog",
-        "tdFilter",
-        "tdFilterWithAcc",
-        "tdOmit",
-        "tdOmitWithAcc",
-        "tdPipeToArray",
-        "tdPipeToObject",
-        "tdDPipeToArray",
-        "tdDPipeToObject",
-        "tdReduceListValue",
-        "reduce",
-        "tdIfElse",
-        "transduceDF",
-        "transduceBF",
-        "tdKeyBy"
-      ],
-      "dependents": [
-        "/packages/gqdux/src/indexSchema.js",
-        "/packages/gqdux/src/schemaToReducerMap.js",
-        "/packages/gqdux/src/schemaToQuerySelector.js",
-        "/packages/gqdux/src/querySelectorToUseLeafQuery.js"
-      ],
-      "percent": 35.88,
-      "reduction": 61.35
-    },
-    {
-      "id": "/packages/gqdux/src/schemaToQuerySelector.js",
-      "size": 4875,
-      "origSize": 5167,
-      "renderedExports": [
-        "withVnorm",
-        "schemaToQuerySelector"
+        "default"
       ],
       "removedExports": [],
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 22.87,
-      "reduction": 5.65
+      "percent": 83.98,
+      "reduction": 0.02
+    },
+    {
+      "id": "/packages/gqdux/src/schemaToOperationMapper.js",
+      "size": 6653,
+      "origSize": 6797,
+      "renderedExports": [
+        "schemaToOperationMapper"
+      ],
+      "removedExports": [],
+      "dependents": [
+        "/packages/gqdux/src/gqdux.js"
+      ],
+      "percent": 6.12,
+      "reduction": 2.12
     },
     {
       "id": "/packages/gqdux/src/indexSchema.js",
-      "size": 4027,
-      "origSize": 4280,
+      "size": 4950,
+      "origSize": 5254,
       "renderedExports": [
         "getDefName",
         "getFieldTypeName",
@@ -190,54 +46,62 @@
         "getDefFields"
       ],
       "dependents": [
-        "/packages/gqdux/src/schemaToReducerMap.js",
-        "/packages/gqdux/src/schemaToQuerySelector.js"
+        "/packages/gqdux/src/schemaToOperationMapper.js"
       ],
-      "percent": 18.89,
-      "reduction": 5.91
+      "percent": 4.55,
+      "reduction": 5.79
     },
     {
-      "id": "/packages/gqdux/src/schemaToReducerMap.js",
-      "size": 2920,
-      "origSize": 3130,
+      "id": "/packages/gqdux/src/gqdux.js",
+      "size": 3179,
+      "origSize": 3520,
       "renderedExports": [
-        "schemaToReducerMap"
+        "initGqdux"
+      ],
+      "removedExports": [],
+      "dependents": [],
+      "percent": 2.92,
+      "reduction": 9.69
+    },
+    {
+      "id": "/packages/gqdux/src/transducers.js",
+      "size": 1623,
+      "origSize": 4405,
+      "renderedExports": [
+        "intersection",
+        "subtract",
+        "union",
+        "polymorphicListItemTest"
+      ],
+      "removedExports": [
+        "identity",
+        "complement",
+        "ADD",
+        "SUBTRACT",
+        "UNION",
+        "INTERSECTION",
+        "SET",
+        "GET"
+      ],
+      "dependents": [
+        "/packages/gqdux/src/gqdux.js"
+      ],
+      "percent": 1.49,
+      "reduction": 63.16
+    },
+    {
+      "id": "/packages/gqdux/src/getStoreScanner.js",
+      "size": 693,
+      "origSize": 747,
+      "renderedExports": [
+        "getStoreScanner"
       ],
       "removedExports": [],
       "dependents": [
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 13.7,
-      "reduction": 6.71
-    },
-    {
-      "id": "/packages/gqdux/src/querySelectorToUseLeafQuery.js",
-      "size": 881,
-      "origSize": 1025,
-      "renderedExports": [
-        "querySelectorToUseLeafQuery"
-      ],
-      "removedExports": [],
-      "dependents": [
-        "/packages/gqdux/src/gqdux.js"
-      ],
-      "percent": 4.13,
-      "reduction": 14.05
-    },
-    {
-      "id": "/packages/gqdux/src/querySelectorToUseQuery.js",
-      "size": 633,
-      "origSize": 640,
-      "renderedExports": [
-        "querySelectorToUseQuery"
-      ],
-      "removedExports": [],
-      "dependents": [
-        "/packages/gqdux/src/querySelectorToUseLeafQuery.js",
-        "/packages/gqdux/src/gqdux.js"
-      ],
-      "percent": 2.97,
-      "reduction": 1.09
+      "percent": 0.64,
+      "reduction": 7.23
     },
     {
       "id": "\u0000rollup-plugin-inject-process-env",
@@ -246,27 +110,16 @@
       "renderedExports": [],
       "removedExports": [],
       "dependents": [
-        "packages/fp-utils/src/fp-utils.js",
+        "/packages/gqdux/node_modules/graphql-tag-bundled/es/graphql-tag-bundled.js",
         "/packages/gqdux/src/indexSchema.js",
-        "/packages/gqdux/src/schemaToReducerMap.js",
-        "/packages/gqdux/src/schemaToQuerySelector.js",
-        "/packages/gqdux/src/querySelectorToUseQuery.js",
-        "/packages/gqdux/src/querySelectorToUseLeafQuery.js",
+        "/packages/gqdux/src/schemaToOperationMapper.js",
+        "/packages/gqdux/src/transducers.js",
+        "/packages/gqdux/src/getStoreScanner.js",
         "/packages/gqdux/src/gqdux.js"
       ],
-      "percent": 1.56,
+      "percent": 0.31,
       "reduction": 0
-    },
-    {
-      "id": "/packages/gqdux/src/gqdux.js",
-      "size": 0,
-      "origSize": 263,
-      "renderedExports": [],
-      "removedExports": [],
-      "dependents": [],
-      "percent": 0,
-      "reduction": 100
     }
   ],
-  "moduleCount": 8
+  "moduleCount": 7
 }

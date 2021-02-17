@@ -1,6 +1,6 @@
 {
   "bundleSize": 91247,
-  "bundleOrigSize": 95818,
+  "bundleOrigSize": 95813,
   "bundleReduction": 4.77,
   "modules": [
     {
@@ -359,7 +359,7 @@
     {
       "id": "\u0000/node_modules/graphql/language/parser.mjs?commonjs-proxy",
       "size": 49,
-      "origSize": 217,
+      "origSize": 212,
       "renderedExports": [
         "default"
       ],
@@ -368,7 +368,7 @@
         "/node_modules/graphql-tag/src/index.js"
       ],
       "percent": 0.05,
-      "reduction": 77.42
+      "reduction": 76.89
     },
     {
       "id": "/packages/graphql-tag-bundled/src/graphql-tag-bundled.js",

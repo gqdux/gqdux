@@ -89,6 +89,15 @@ Try it [on codepen](link)
 
 ```js
 
+<<<<<<< Updated upstream
+=======
+// 9 trees: schema, query, arguments, selections, variables, current/previous state, current/previous denormalized state selection
+const schema=`
+  type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
+  type Pet{id:ID,name:String}
+  scalar SomeScalar
+`;
+>>>>>>> Stashed changes
 
 export const intersection=(meta,args)=>next=>obj=>polymorphicListItemTest(meta,args)(obj) && next(obj));
 
