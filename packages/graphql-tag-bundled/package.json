@@ -1,6 +1,6 @@
 {
   "name": "graphql-tag-bundled",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "graphql-tag bundled with graphqljs for browser use (https://github.com/apollographql/graphql-tag#readme)",
   "homepage": "",
   "devDependencies": {

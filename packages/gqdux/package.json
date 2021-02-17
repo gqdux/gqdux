@@ -1,6 +1,6 @@
 {
   "name": "gqdux",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "Simple, Redux-first GraphQL client optimized for developer speed.",
   "homepage": "",
   "author": "Adam Laughlin <adam.laughlin@gmail.com>",
