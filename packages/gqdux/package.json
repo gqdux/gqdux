@@ -1,20 +1,20 @@
 {
   "name": "gqdux",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "Simple, Redux-first GraphQL client optimized for developer speed.",
   "homepage": "",
   "author": "Adam Laughlin <adam.laughlin@gmail.com>",
   "license": "MIT",
-  "main":"src/gqdux.js",
-  "module":"src/gqdux.js",
-  "type":"module",
+  "main": "src/gqdux.js",
+  "module": "src/gqdux.js",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "graphql-tag-bundled": "^0.0.10",
     "@a-laughlin/fp-utils": "^0.0.30",
     "@testing-library/react-hooks": "^3.3.0",
+    "graphql-tag-bundled": "^0.0.10",
     "react": "^17",
     "react-dom": "^17",
     "react-test-renderer": "^17",
