@@ -1,10 +1,18 @@
+import {
+  appendArrayReducer,
+  appendObjectReducer,
+  stubArray,
+  stubObject,
+} from "@a-laughlin/fp-utils";
+import gql from "graphql-tag-bundled";
+import {
+  schemaToOperationMapper,
+  isQueryMutation,
+} from "./schemaToOperationMapper";
+import { intersection, subtract, union } from "./transducers";
+import { getStoreScanner } from "./getStoreScanner";
 
-import {appendArrayReducer, appendObjectReducer, stubArray, stubObject} from '@a-laughlin/fp-utils';
-import gql from 'graphql-tag-bundled';
-import {schemaToOperationMapper,isQueryMutation} from './schemaToOperationMapper';
-import {intersection,subtract,union} from './transducers';
-import {getStoreScanner} from './getStoreScanner';
-
+// prettier-ignore
 export const initGqdux = ({
   schema,
   listTransducers={},
@@ -13,7 +21,8 @@ export const initGqdux = ({
   getChangeListItemCombiner=({nodeType})=>nodeType==='objectScalarList'||nodeType==='objectIdList'?appendArrayReducer:appendObjectReducer,
   getChangeListItemAccumulator=({nodeType})=>nodeType==='objectScalarList'||nodeType==='objectIdList'?stubArray:stubObject,
 }={})=>{
-  const transducers={intersection,subtract,union,...listTransducers}
+  const transducers={intersection,subtract,union,...listTransducers};
+  schema=typeof schema==='string'?gql(schema):schema;
   // maps redux state to another normalized redux state.
   // See "should denormalize item subsets with constants" in gqdux.test.js for the difference
   const getNormalizedStateMapper = schemaToOperationMapper( schema, transducers, getChangeListItemCombiner, getChangeListItemAccumulator);
