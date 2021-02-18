@@ -41,8 +41,8 @@ npm install gqdux
 ## Quick Start ([Also on codepen](https://codepen.io/a-laughlin/pen/MWyVeYB?editors=0010))
 
 ```js
-import {initGqdux} from 'https://unpkg.com/gqdux@0.0.31/es/gqdux.js';
-import {createStore} from 'https://unpkg.com/redux@4.0.5/es/redux.mjs';
+import {initGqdux} from 'gqdux';
+import {createStore} from 'redux';
 import {useState,useEffect,useMemo} from 'react'
 import {render} from 'react-dom'
 
