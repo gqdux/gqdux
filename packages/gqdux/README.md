@@ -103,7 +103,7 @@ render(
 
 ## API
 
-initialization functions  
+initialization functions  [code link](https://github.com/gqdux/gqdux/blob/master/packages/gqdux/src/gqdux.js#L16)
 ```js
 const {getGqdux,rootReducer,getSelectorHook}=initGqdux({
   schema,
@@ -114,7 +114,6 @@ const {getGqdux,rootReducer,getSelectorHook}=initGqdux({
 const gqdux=getGqdux(reduxStore); // selects. If no selections requested, dispatches a mutating action
 const useGqdux = getSelectorHook(reduxStore,React.useState,React.useEffect,gqdux); // a convenience fn to create a react hook from gqdux
 ```
-initGqdux initialization properties: [code link](https://github.com/gqdux/gqdux/blob/master/packages/gqdux/src/gqdux.js#L16)
 
 query syntax
 ```js
@@ -125,11 +124,13 @@ gqdux`Person(intersect:{id:"a"}){id,friends{id}}` -> {a:{id:'a',friends:{b:{id:'
 gqdux`Person(intersect:{id:"a"}` -> no data returned, but queries for Person get {...a}, (Person.b & Person.c removed)  
 
 // prop mutation  
-gqdux(`Person(intersect:{id:"a"},nicknames:{union:["AAAA"]})`) -> no data returned. Queries with Person.a get {...nicknames:["AA","AAA","AAAA"]}  
+gqdux(`Person(friends:{subtract:{id:"b"}})`) -> no data returned. All persons with a friend b have that friend removed from their friend list
 
 // In-Progress (to select a subset, then modify it)  
-Collection+Prop             gqdux`Person(intersect:{id:"a"},friends:{subtract:{id:"b"}})`  
-Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"b"}})`  
+// prop mutation  
+gqdux(`Person(intersect:{id:"a"},nicknames:{union:["AAAA"]})`) -> no data returned. Queries with Person.a get {...nicknames:["AA","AAA","AAAA"]}  
+// prop mutation (shortcut
+gqdux`Person(id:"a",friends:{intersect:{id:"b"}})`  
 ```  
 
 ## Affordances
