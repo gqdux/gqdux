@@ -9,100 +9,174 @@ The rate we can build things depends on the number and topology of graphs we nee
 Graphs it addresses:
 flow control
 semantic network
-semiotic network
+semiotic network (api size and language complexity)
 component structure
-inheritance tree
-scope tree
-state tree
 parameter/argument tree
 schema tree
 data flow
 module network
 type network
 
-Incremental Adoptability
+## Incremental Adoptability
 - Works alongside an existing redux implementation
 - Leverage existing Redux knowledge, dev tools, and middleware  
 - No Graphql server necessary. Use existing REST, RPC, Web Socket, and GraphQL server middleware. (though
 
-Concerns Separation
+## Assumptions
 
-## Constraints
-
-TBD
+Currently, a normalized state, or way to normalize the state (e.g., normalizr).
+GraphQL query knowledge (link to docs)
+Redux knowledge
 
 ## Installing
 
-TBD
+```shell
+yarn add gqdux
+# or 
+npm install gqdux
+```
 
-## Quick Start (w/o React.  See Codepen for React example.)
+## Quick Start
 
 Try it [on codepen](https://codepen.io/a-laughlin/pen/MWyVeYB?editors=0010)
-```js
-import {createStore} from 'redux';
-import {initGqdux} from 'gqdux';
 
-const schema=`
+```js
+import {initGqdux} from 'https://unpkg.com/gqdux@0.0.31/es/gqdux.js';
+import {createStore} from 'https://unpkg.com/redux@4.0.5/es/redux.mjs';
+import {useState,useEffect,useMemo} from 'react'
+import {render} from 'react-dom'
+
+const schema = `
 type Person{
-  id:ID,
-  name:String,
-  best:Person,
-  otherbest:Person,
-  nicknames:[String],
-  friends:[Person],
-  pet:Pet
+  id:ID
+  name:String
+  friends:[Person]
 }
 `;
-
 const initialState = {
   Person:{
-    a:{id:'a',name:'A',best:'b',otherbest:'c',nicknames:["AA","AAA"],friends:['b','c'],pet:'x'},
-    b:{id:'b',name:'B',best:'a',friends:['a'],nicknames:["BB","BBB"]},
-    c:{id:'c',name:'C',best:'b',friends:['b'],nicknames:[]},
+    a:{id:'a',name:'A',friends:['b','c']},
+    b:{id:'b',name:'B',friends:['c']},
+    c:{id:'c',name:'C',friends:['a','b']}
   }
 };
 
-const {getGqdux,rootReducer}=initGqdux({schema});
+const {getGqdux,rootReducer,getSelectorHook}=initGqdux({schema});
 const reduxStore=createStore(rootReducer,initialState);
-const gqdux=getGqdux(reduxStore);
+const gqdux=getGqdux(reduxStore); // selects. If no selections requested, dispatches a mutating action
+const useGqdux = getSelectorHook(reduxStore,useState,useEffect,gqdux);
 
+// component
+const Person=()=>
+  <ul>{
+    Object.values(
+      useGqdux(`Person{id,name,friends{id,name}}`).Person
+    ).map(p=>
+          <li key={p.id}><pre>{JSON.stringify(p,null,2)}</pre></li>
+         )
+  }</ul>;
+
+
+const Person_intersection_name_A = ()=>gqdux(`Person(intersection:{name:"A"})`);
+const Person_subtract_id_a = ()=>gqdux(`Person(subtract:{id:"a"})`);
+const Person_friends_subtract_id_b = ()=>gqdux(`Person(friends:{subtract:{id:"b"}})`);
+// union gives the ability to add, but that transducer is not yet implemented
+// custom transducers can do the same
+render(
+  <>
+    <h1>Example</h1>    
+    <button onClick={Person_friends_subtract_id_b}>
+      Person_friends_subtract_id_b
+    </button>
+    <button onClick={Person_subtract_id_a}>
+      Person_subtract_id_a
+    </button>
+    <button onClick={Person_intersection_name_A}>
+      Person_intersection_name_{gqdux(`Person(intersection:"a"){name}`).Person.a.name}
+    </button>
+    <Person/>
+    <a href=""
+  </>,
+  document.getElementById('app-root')
+);
+```
+
+## Constraints
+
+Schema types map 1:1 with Redux state collections.
+Gqdux separates the graphql spec's query concerns from its network concerns.
+Middleware is responsible for parsing the queries and submitting network requests.
+A single reducer merges mutations, accepting flux standard action format created by gqdux: `{type:'mutation',payload:[query,variables]}`
+Transducers take the place of resolvers in async cases like network requests.  There is no need for resolvers in synchronous requests since gqdux uses the schema to auto-resolve queries.
+Loading states are considered a separate part of the state tree to stay relational.  Metadata would be stored in a separate collection, referenced by a nested property on the original schema type.
+Network requests should be handled by other tools, then updates made to the state tree.  gqdux doesn't need to know about network requests, only the state tree.
+
+
+## Affordances
+
+Queries can return arrays or objects, depending on combiner and accumulator functions [passed to initGqdux](https://github.com/gqdux/gqdux/blob/master/packages/gqdux/src/gqdux.js#L19)
+```js
+export const stubObject = () => ({});
+export const stubArray = () => [];
+export const appendArrayReducer = (acc = [], v) => {
+  acc[acc.length] = v;
+  return acc;
+};
+export const appendObjectReducer = (acc = {}, v, k) => {
+  acc[k] = v;
+  return acc;
+};
+```
+
+## API
+
+initGqdux tbd once api stabilizes.  For now, [code link](https://github.com/gqdux/gqdux/blob/master/packages/gqdux/src/gqdux.js#L16)
 // query
 gqdux`Person(intersect:{id:"a"}){id,friends{id}}` -> {a:{id:'a',friends:{b:{id:'b'},c:{id:'c'}}}}
 
 // collection mutation
-gqdux`Person(intersection:{id:"a"}` -> no data returned, but queries for Person get {...a}, (Person.b & Person.c removed)
+gqdux`Person(intersect:{id:"a"}` -> no data returned, but queries for Person get {...a}, (Person.b & Person.c removed)
 
 // prop mutation
-gqdux(`Person(intersection:{id:"a"},nicknames:{union:["AAAA"]})`) -> no data returned. Queries with Person.a get {...nicknames:["AA","AAA","AAAA"]}
+gqdux(`Person(intersect:{id:"a"},nicknames:{union:["AAAA"]})`) -> no data returned. Queries with Person.a get {...nicknames:["AA","AAA","AAAA"]}
 
 // In-Progress (to select a subset, then modify it)
-Collection+Prop             gqdux`Person(intersection:{id:"a"},friends:{intersect:{id:"b"}})`
+Collection+Prop             gqdux`Person(intersect:{id:"a"},friends:{intersect:{id:"b"}})`
 Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"b"}})`
-
-```
 
 ## Authoring Transducers
 
+There is no language outside set operations and the data tree
+Transducers (currently intersection, subtraction, eventually union), operate on the 
+Transducers have a similar signature to redux middleware.
+They operate on collections and collection items.
+
+6 nodeTypes map graphql schema types to redux state tree nodes: 
+todo: make this a table with graphql schema and equivalent redux node  
+scalar  
+object  
+objectId  
+objectIdList  
+objectObjectList  
+objectScalarList 
+in transducers, these appear as `schemaInfo.nodeType`
 ```js
 
-// 9 trees: schema, query, arguments, selections, variables, current/previous state, current/previous denormalized state selection
-const schema=`
-  type Person{id:ID,name:String,best:Person,otherbest:Person,nicknames:[String],friends:[Person],pet:Pet}
-  type Pet{id:ID,name:String}
-  scalar SomeScalar
-`;
+export const intersection=(schemaInfo,args)=>
+  next=>
+    stateVal=>
+      polymorphicListItemTest(schemaInfo,args)(stateVal) && next(stateVal));
 
-export const intersection=(meta,args)=>next=>obj=>polymorphicListItemTest(meta,args)(obj) && next(obj));
+export const subtract=(schemaInfo,args)=>
+  next=>
+    stateVal=>
+      not(polymorphicListItemTest(schemaInfo,args))(stateVal) && next(stateVal));
 
-export const intersection=(meta,args) => next => obj => not(polymorphicListItemTest(meta,args))(obj) && next(obj));
-
-export const union=(args={},meta) => next => obj => {...more complex...};
+export const union=(schemaInfo,args) =>
+  next=> 
+    stateVal=> {...more complex...};
 ```
 
-
-## Quick Start (Redux + React)
-
-## API
 
 ## GQL Syntax (intentionally a subset)
 
@@ -165,18 +239,13 @@ Redux
 Graphql
 Apollo, Urql
 
-## Escape Hatches
-
-Action creators
-Writing custom operations
-
 ## Contributing
 
 Write if there's interest
 
 ## Recipes
 
-Existing redux patterns mostly apply.  The only difference is in parsing action names.  
+Converting the syntax to rest/graphql calls takes parsing the query.  The syntax is a subset of graphql currently, so it should work with existing graphql backends.  However, there is no resolver It should work
 
 ## GQL Differences
 // converts query variable definitions array to an object, populating any relevant variables passsed
