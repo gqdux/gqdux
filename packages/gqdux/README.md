@@ -101,18 +101,18 @@ render(
 
 ## Constraints
 
-Schema types map 1:1 with Redux state collections.
-Gqdux separates the graphql spec's query concerns from its network concerns.
-Middleware is responsible for parsing the queries and submitting network requests.
-A single reducer merges mutations, accepting flux standard action format created by gqdux: `{type:'mutation',payload:[query,variables]}`
-Transducers take the place of resolvers in async cases like network requests.  There is no need for resolvers in synchronous requests since gqdux uses the schema to auto-resolve queries.
-Loading states are considered a separate part of the state tree to stay relational.  Metadata would be stored in a separate collection, referenced by a nested property on the original schema type.
-Network requests should be handled by other tools, then updates made to the state tree.  gqdux doesn't need to know about network requests, only the state tree.
+Schema types map 1:1 with Redux state collections.  
+Gqdux separates the graphql spec's query concerns from its network concerns.  
+Middleware is responsible for parsing the queries and submitting network requests.  
+A single reducer merges mutations, accepting flux standard action format created by gqdux: `{type:'mutation',payload:[query,variables]}`  
+Transducers take the place of resolvers in async cases like network requests.  There is no need for resolvers in synchronous requests since gqdux uses the schema to auto-resolve queries.  
+Loading states are considered a separate part of the state tree to stay relational.  Metadata would be stored in a separate collection, referenced by a nested property on the original schema type.  
+Network requests should be handled by other tools, then updates made to the state tree.  gqdux doesn't need to know about network requests, only the state tree.  
 
 
 ## Affordances
 
-Queries can return arrays or objects, depending on combiner and accumulator functions [passed to initGqdux](https://github.com/gqdux/gqdux/blob/master/packages/gqdux/src/gqdux.js#L19)
+Queries can return arrays or objects, depending on combiner and accumulator functions [passed to initGqdux](https://github.com/gqdux/gqdux/blob/master/packages/gqdux/src/gqdux.js#L19)  
 ```js
 export const stubObject = () => ({});
 export const stubArray = () => [];
@@ -128,19 +128,20 @@ export const appendObjectReducer = (acc = {}, v, k) => {
 
 ## API
 
-initGqdux tbd once api stabilizes.  For now, [code link](https://github.com/gqdux/gqdux/blob/master/packages/gqdux/src/gqdux.js#L16)
-// query
-gqdux`Person(intersect:{id:"a"}){id,friends{id}}` -> {a:{id:'a',friends:{b:{id:'b'},c:{id:'c'}}}}
+initGqdux: tbd once api stabilizes.  For now, [code link](https://github.com/gqdux/gqdux/blob/master/packages/gqdux/src/gqdux.js#L16)
 
-// collection mutation
-gqdux`Person(intersect:{id:"a"}` -> no data returned, but queries for Person get {...a}, (Person.b & Person.c removed)
+// query  
+gqdux`Person(intersect:{id:"a"}){id,friends{id}}` -> {a:{id:'a',friends:{b:{id:'b'},c:{id:'c'}}}}  
 
-// prop mutation
-gqdux(`Person(intersect:{id:"a"},nicknames:{union:["AAAA"]})`) -> no data returned. Queries with Person.a get {...nicknames:["AA","AAA","AAAA"]}
+// collection mutation  
+gqdux`Person(intersect:{id:"a"}` -> no data returned, but queries for Person get {...a}, (Person.b & Person.c removed)  
 
-// In-Progress (to select a subset, then modify it)
-Collection+Prop             gqdux`Person(intersect:{id:"a"},friends:{intersect:{id:"b"}})`
-Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"b"}})`
+// prop mutation  
+gqdux(`Person(intersect:{id:"a"},nicknames:{union:["AAAA"]})`) -> no data returned. Queries with Person.a get {...nicknames:["AA","AAA","AAAA"]}  
+
+// In-Progress (to select a subset, then modify it)  
+Collection+Prop             gqdux`Person(intersect:{id:"a"},friends:{subtract:{id:"b"}})`  
+Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"b"}})`  
 
 ## Authoring Transducers
 
@@ -243,7 +244,7 @@ Write if there's interest
 
 ## Recipes
 
-Converting the syntax to rest/graphql calls takes parsing the query.  The syntax is a subset of graphql currently, so it should work with existing graphql backends.  However, there is no resolver It should work
+Converting the syntax to rest/graphql calls takes parsing the query.  The syntax is a subset of graphql currently, so it should work with existing graphql backends.
 
 ## GQL Differences
 // converts query variable definitions array to an object, populating any relevant variables passsed
