@@ -30,11 +30,13 @@ Redux knowledge
 
 ## Installing
 
+no external dependencies
 ```shell
 yarn add gqdux
 # or 
 npm install gqdux
 ```
+
 
 ## Quick Start ([Also on codepen](https://codepen.io/a-laughlin/pen/MWyVeYB?editors=0010))
 
@@ -99,16 +101,36 @@ render(
 );
 ```
 
-## Constraints
+## API
 
-Schema types map 1:1 with Redux state collections.  
-Gqdux separates the graphql spec's query concerns from its network concerns.  
-Middleware is responsible for parsing the queries and submitting network requests.  
-A single reducer merges mutations, accepting flux standard action format created by gqdux: `{type:'mutation',payload:[query,variables]}`  
-Transducers take the place of resolvers in async cases like network requests.  There is no need for resolvers in synchronous requests since gqdux uses the schema to auto-resolve queries.  
-Loading states are considered a separate part of the state tree to stay relational.  Metadata would be stored in a separate collection, referenced by a nested property on the original schema type.  
-Network requests should be handled by other tools, then updates made to the state tree.  gqdux doesn't need to know about network requests, only the state tree.  
+initialization functions  
+```js
+const {getGqdux,rootReducer,getSelectorHook}=initGqdux({
+  schema,
+  listTransducers={intersection, subtract, union}, // for use in queries. See see authoring transducers
+  ... fns to control whether gqdux returns array or object collections
+  
+}); // initialization
+const gqdux=getGqdux(reduxStore); // selects. If no selections requested, dispatches a mutating action
+const useGqdux = getSelectorHook(reduxStore,React.useState,React.useEffect,gqdux); // a convenience fn to create a react hook from gqdux
+```
+initGqdux initialization properties: [code link](https://github.com/gqdux/gqdux/blob/master/packages/gqdux/src/gqdux.js#L16)
 
+query syntax
+```js
+// query  
+gqdux`Person(intersect:{id:"a"}){id,friends{id}}` -> {a:{id:'a',friends:{b:{id:'b'},c:{id:'c'}}}}  
+
+// collection mutation  
+gqdux`Person(intersect:{id:"a"}` -> no data returned, but queries for Person get {...a}, (Person.b & Person.c removed)  
+
+// prop mutation  
+gqdux(`Person(intersect:{id:"a"},nicknames:{union:["AAAA"]})`) -> no data returned. Queries with Person.a get {...nicknames:["AA","AAA","AAAA"]}  
+
+// In-Progress (to select a subset, then modify it)  
+Collection+Prop             gqdux`Person(intersect:{id:"a"},friends:{subtract:{id:"b"}})`  
+Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"b"}})`  
+```  
 
 ## Affordances
 
@@ -126,23 +148,15 @@ export const appendObjectReducer = (acc = {}, v, k) => {
 };
 ```
 
-## API
+## Constraints
 
-initGqdux: tbd once api stabilizes.  For now, [code link](https://github.com/gqdux/gqdux/blob/master/packages/gqdux/src/gqdux.js#L16)
-
-// query  
-gqdux`Person(intersect:{id:"a"}){id,friends{id}}` -> {a:{id:'a',friends:{b:{id:'b'},c:{id:'c'}}}}  
-
-// collection mutation  
-gqdux`Person(intersect:{id:"a"}` -> no data returned, but queries for Person get {...a}, (Person.b & Person.c removed)  
-
-// prop mutation  
-gqdux(`Person(intersect:{id:"a"},nicknames:{union:["AAAA"]})`) -> no data returned. Queries with Person.a get {...nicknames:["AA","AAA","AAAA"]}  
-
-// In-Progress (to select a subset, then modify it)  
-Collection+Prop             gqdux`Person(intersect:{id:"a"},friends:{subtract:{id:"b"}})`  
-Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"b"}})`  
-
+Schema types map 1:1 with Redux state collections.  
+Gqdux separates the graphql spec's query concerns from its network concerns.  
+Middleware is responsible for parsing the queries and submitting network requests.  
+A single reducer merges mutations, accepting flux standard action format created by gqdux: `{type:'mutation',payload:[query,variables]}`  
+Transducers take the place of resolvers in async cases like network requests.  There is no need for resolvers in synchronous requests since gqdux uses the schema to auto-resolve queries.  
+Loading states are considered a separate part of the state tree to stay relational.  Metadata would be stored in a separate collection, referenced by a nested property on the original schema type.  
+Network requests should be handled by other tools, then updates made to the state tree.  gqdux doesn't need to know about network requests, only the state tree.  
 ## Authoring Transducers
 
 There is no language outside set operations and the data tree
