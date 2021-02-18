@@ -36,9 +36,7 @@ yarn add gqdux
 npm install gqdux
 ```
 
-## Quick Start
-
-Try it [on codepen](https://codepen.io/a-laughlin/pen/MWyVeYB?editors=0010)
+## Quick Start ([Also on codepen](https://codepen.io/a-laughlin/pen/MWyVeYB?editors=0010))
 
 ```js
 import {initGqdux} from 'https://unpkg.com/gqdux@0.0.31/es/gqdux.js';
