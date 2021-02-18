@@ -21,25 +21,23 @@ module network
 type network
 
 Incremental Adoptability
-
+- Works alongside an existing redux implementation
 - Leverage existing Redux knowledge, dev tools, and middleware  
-- No Graphql server necessary. Use existing REST, RPC, Web Socket, and GraphQL server middleware.
-- Flexible property partitioning - send only what each server needs
+- No Graphql server necessary. Use existing REST, RPC, Web Socket, and GraphQL server middleware. (though
 
 Concerns Separation
 
 ## Constraints
 
-- constraints:
-  - always creates a collection for objects:
-    - We often start with a single object, and need a list of them. Starting with a list is more flexible.
-    - We can do anything with 1-length list that we can with a single object
-    
+TBD
 
 ## Installing
 
-## Quick Start (Redux Only)
+TBD
 
+## Quick Start (w/o React.  See Codepen for React example.)
+
+Try it [on codepen](https://codepen.io/a-laughlin/pen/MWyVeYB?editors=0010)
 ```js
 import {createStore} from 'redux';
 import {initGqdux} from 'gqdux';
@@ -82,8 +80,6 @@ Collection+Prop             gqdux`Person(intersection:{id:"a"},friends:{intersec
 Collection+Prop (shortcut)  gqdux`Person(id:"a",friends:{intersect:{id:"b"}})`
 
 ```
-
-Try it [on codepen](link)
 
 ## Authoring Transducers
 
