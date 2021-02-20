@@ -95,7 +95,6 @@ render(
       Person_intersection_name_{gqdux(`Person(intersection:"a"){name}`).Person.a.name}
     </button>
     <Person/>
-    <a href=""
   </>,
   document.getElementById('app-root')
 );
