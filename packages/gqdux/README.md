@@ -69,11 +69,8 @@ const useGqdux = getSelectorHook(reduxStore,useState,useEffect,gqdux);
 // component
 const Person=()=>
   <ul>{
-    Object.values(
-      useGqdux(`Person{id,name,friends{id,name}}`).Person
-    ).map(p=>
-          <li key={p.id}><pre>{JSON.stringify(p,null,2)}</pre></li>
-         )
+    Object.values( useGqdux(`Person{id,name,friends{id,name}}`).Person)
+      .map(p=><li key={p.id}><pre>{JSON.stringify(p,null,2)}</pre></li>)
   }</ul>;
 
 
